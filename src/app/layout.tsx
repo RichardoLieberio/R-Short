@@ -1,6 +1,7 @@
 import { NextFont } from 'next/dist/compiled/@next/font';
 import { DM_Sans } from 'next/font/google';
 import { ReactNode, JSX } from 'react';
+import { ClerkProvider } from '@clerk/nextjs';
 import Header from '@/components/Header';
 import './globals.css';
 
@@ -16,11 +17,13 @@ export const metadata: object = {
 
 export default function RootLayout({ children }: { children: ReactNode }): JSX.Element {
     return (
-        <html>
-            <body className={`${dmSans.className} relative text-sm md:text-base text-foreground bg-background`}>
-                <Header />
-                { children }
-            </body>
-        </html>
+        <ClerkProvider>
+            <html lang="en">
+                <body className={`${dmSans.className} w-full h-dvh relative text-sm md:text-base text-foreground bg-background`}>
+                    <Header />
+                    { children }
+                </body>
+            </html>
+        </ClerkProvider>
     );
 }

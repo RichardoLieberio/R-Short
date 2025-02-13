@@ -42,3 +42,6 @@ next-env.d.ts
 
 # prettier
 .prettierrc
+
+# clerk configuration (can include secrets)
+/.clerk/
