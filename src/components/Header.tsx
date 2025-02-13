@@ -8,7 +8,7 @@ export default function Header(): JSX.Element {
     return (
         <header className="md:mx-auto md:max-w-3xl h-16 px-4 flex items-center justify-between gap-4">
             <Link href="/">
-                <Image src="/IconText.png" alt="R-Short Icon" width="36" height="36" quality={80} loading="lazy" />
+                <Image src="/IconText.png" alt="R-Short Icon" width="36" height="36" priority />
             </Link>
             <SignedIn>
                 <Link href="/dashboard" className="hover:underline">Dashboard</Link>
