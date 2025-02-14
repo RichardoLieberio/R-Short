@@ -41,7 +41,6 @@ export async function POST(req: Request): Promise<NextResponse> {
     if (eventType === 'user.created') {
         const { data }: { data: { id: string, external_accounts: { email_address: string }[] } } = JSON.parse(body);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         await db.insert(User)
             .values({ clerk_id: data.id, email: data.external_accounts[0].email_address })
             .onConflictDoUpdate({
@@ -50,7 +49,6 @@ export async function POST(req: Request): Promise<NextResponse> {
             });
     } else if (eventType === 'user.deleted') {
         const { data }: { data: { deleted: boolean, id: string } } = JSON.parse(body);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         if (data.deleted) await db.update(User).set({ is_deleted: true, deleted_at: new Date() }).where(eq(User.clerk_id, data.id));
     }
 
