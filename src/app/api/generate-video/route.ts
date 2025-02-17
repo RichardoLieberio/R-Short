@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
+import { FirebaseApp, initializeApp } from 'firebase/app';
+import { FirebaseStorage, StorageReference, getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { GoogleGenerativeAI, GenerativeModel, ChatSession, GenerateContentResult } from '@google/generative-ai';
+import textToSpeech, { protos, TextToSpeechClient } from '@google-cloud/text-to-speech';
+import { AssemblyAI, Transcript } from 'assemblyai';
+import Replicate from 'replicate';
 
 export async function GET(): Promise<NextResponse> {
     const genAI: GoogleGenerativeAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
@@ -31,6 +37,83 @@ export async function GET(): Promise<NextResponse> {
         ],
     });
 
-    const result: GenerateContentResult = await chatSession.sendMessage('Write a script and AI image prompt in cartoon format for each scene to generate a 30 second video based on the following storyboard:\n\n\"\"\"\nA man who frequently lies finds himself in need of help, but no one believes him.\n\"\"\"\n\nThe output should be provided in JSON format with imagePrompt and contentText as fields.');
-    return NextResponse.json({ message: 'Success', result: result.response.text() }, { status: 200 });
+    const response: GenerateContentResult = await chatSession.sendMessage('Write a script and AI image prompt in fantasy format for each scene to generate a 30 second video based on the following storyboard:\n\n\"\"\"\nA man who frequently lies finds himself in need of help, but no one believes him.\n\"\"\"\n\nThe output should be provided in JSON format with imagePrompt and contentText as fields.');
+    const result: string = response.response.text();
+    const content: { imagePrompt: string, contentText: string }[] = JSON.parse(result);
+
+    const client: TextToSpeechClient = new textToSpeech.TextToSpeechClient({ apiKey: process.env.FIREBASE_API_KEY });
+
+    const request: protos.google.cloud.texttospeech.v1.ISynthesizeSpeechRequest = {
+        input: { text: content[0].contentText },
+        voice: { languageCode: 'en-US', ssmlGender: 'NEUTRAL' },
+        audioConfig: { audioEncoding: 'MP3' },
+    };
+
+    type audioResponseType = [
+        protos.google.cloud.texttospeech.v1.ISynthesizeSpeechResponse,
+        protos.google.cloud.texttospeech.v1.ISynthesizeSpeechRequest | undefined,
+        object | undefined
+    ];
+
+    const [ audioResponse ]: audioResponseType = await client.synthesizeSpeech(request);
+    const audioBuffer: Uint8Array | null = audioResponse.audioContent instanceof Uint8Array ? audioResponse.audioContent : null;
+
+    const firebaseConfig: { apiKey: string, authDomain: string, projectId: string, storageBucket: string, messagingSenderId: string, appId: string, measurementId: string } = {
+        apiKey: process.env.FIREBASE_API_KEY!,
+        authDomain: process.env.FIREBASE_AUTH_DOMAIN!,
+        projectId: process.env.FIREBASE_PROJECT_ID!,
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET!,
+        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID!,
+        appId: process.env.FIREBASE_APP_ID!,
+        measurementId: process.env.FIREBASE_MEASUREMENT_ID!,
+    };
+
+    const app: FirebaseApp = initializeApp(firebaseConfig);
+    const storage: FirebaseStorage = getStorage(app);
+
+    const soundRef: StorageReference = ref(storage, `Sounds/${uuidv4()}.mp3`);
+    if (audioBuffer) await uploadBytes(soundRef, audioBuffer);
+
+    const assemblyClient: AssemblyAI = new AssemblyAI({ apiKey: process.env.ASSEMBLY_AI_API_KEY! });
+    const audioUrl: string = await getDownloadURL(soundRef);
+    const assemblyConfig: { audio_url: string } = { audio_url: audioUrl };
+
+    const transcript: Transcript = await assemblyClient.transcripts.transcribe(assemblyConfig);
+
+    const replicate: Replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
+    const input: { width: number, height: number, prompt: string, negative_prompt: string, scheduler: string, num_outputs: number, guidance_scale: number, num_inference_steps: number } = {
+        width: 800,
+        height: 1200,
+        prompt: content[0].imagePrompt,
+        negative_prompt: 'worst quality, low quality',
+        scheduler: 'K_EULER',
+        num_outputs: 1,
+        guidance_scale: 0,
+        num_inference_steps: 4,
+    };
+    // eslint-disable-next-line @typescript-eslint/typedef
+    const object = await replicate.run('bytedance/sdxl-lightning-4step:5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637', { input });
+    try {
+        const textOutput = await object[0].text();
+        console.log('Text output:', textOutput);
+    } catch (err) {
+        console.log('Text error:', err);
+    }
+
+    try {
+        const jsonOutput = await object[0].json();
+        console.log('JSON output:', jsonOutput);
+    } catch (err) {
+        console.log('JSON error:', err);
+    }
+
+    try {
+        const bufferOutput = await object[0].arrayBuffer();
+        console.log('Buffer output:', bufferOutput);
+    } catch (err) {
+        console.log('Buffer error:', err);
+    }
+    // const base64Image: string = 'data:image/png;base64' + await ConvertImage(output);
+
+    return NextResponse.json({ message: 'Success', object }, { status: 200 });
 }
