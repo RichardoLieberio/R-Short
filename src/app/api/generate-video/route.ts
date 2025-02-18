@@ -1,90 +1,44 @@
 import { NextResponse } from 'next/server';
-import { JSX } from 'react';
+
 import path from 'path';
 import fs from 'fs';
 import { writeFile } from 'fs/promises';
+
+import { auth } from '@clerk/nextjs/server';
 import { v4 as uuidv4 } from 'uuid';
-// import { FirebaseApp, initializeApp } from 'firebase/app';
-// import { FirebaseStorage, StorageReference, getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { FirebaseApp, initializeApp } from 'firebase/app';
+import { FirebaseStorage, StorageReference, getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { GoogleGenerativeAI, GenerativeModel, ChatSession, GenerateContentResult } from '@google/generative-ai';
 import textToSpeech, { protos, TextToSpeechClient } from '@google-cloud/text-to-speech';
 import { AssemblyAI, Transcript } from 'assemblyai';
-import Replicate from 'replicate';
-import { Composition, Img, Audio, Sequence, Video } from 'remotion';
-// import * as remotion from 'remotion';
+
+import { db, User, Video } from '@database';
+
+const firebaseConfig: firebaseConfigurationType = {
+    apiKey: process.env.FIREBASE_API_KEY!,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN!,
+    projectId: process.env.FIREBASE_PROJECT_ID!,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET!,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID!,
+    appId: process.env.FIREBASE_APP_ID!,
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID!,
+};
 
 export async function GET(): Promise<NextResponse> {
+    const { userId }: { userId: string | null } = await auth();
+
+    const id: string = uuidv4();
+    const prompt: string = 'Write a script and AI image prompt in pixel art format for each scene to generate a 30 second video based on the following storyboard:\n\n\"\"\"\nA man who frequently lies finds himself in need of help, but no one believes him.\n\"\"\"\n\nThe output should be provided in JSON format with imagePrompt and contentText as fields.';
+
     try {
-        const contents: ContentType[] = await generateContent('Write a script and AI image prompt in pixel art format for each scene to generate a 30 second video based on the following storyboard:\n\n\"\"\"\nA man who frequently lies finds himself in need of help, but no one believes him.\n\"\"\"\n\nThe output should be provided in JSON format with imagePrompt and contentText as fields.');
-        const [ audiosAndCaptions, images ]: [ AudioAndCaptionType[], string[] ] = await Promise.all([ generateAudioAndCaption(contents), generateImages(contents) ]);
+        const contents: ContentType[] = await generateContent(prompt);
+        const [ transcripts, images ]: [ Transcript[], string[] ] = await Promise.all([ generateTranscript(id, contents), generateImages(contents) ]);
 
-        const VideoComposition: JSX.Element = generateVideoComposition(audiosAndCaptions, images);
-
-        return NextResponse.json({ message: 'Success', audiosAndCaptions, images }, { status: 200 });
+        return NextResponse.json({ message: 'Success', transcripts, images }, { status: 200 });
     } catch (error) {
         console.error(error);
         return NextResponse.json({ message: 'Failed', error }, { status: 400 });
     }
-
-    // const firebaseConfig: { apiKey: string, authDomain: string, projectId: string, storageBucket: string, messagingSenderId: string, appId: string, measurementId: string } = {
-    //     apiKey: process.env.FIREBASE_API_KEY!,
-    //     authDomain: process.env.FIREBASE_AUTH_DOMAIN!,
-    //     projectId: process.env.FIREBASE_PROJECT_ID!,
-    //     storageBucket: process.env.FIREBASE_STORAGE_BUCKET!,
-    //     messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID!,
-    //     appId: process.env.FIREBASE_APP_ID!,
-    //     measurementId: process.env.FIREBASE_MEASUREMENT_ID!,
-    // };
-
-    // const app: FirebaseApp = initializeApp(firebaseConfig);
-    // const storage: FirebaseStorage = getStorage(app);
-
-    // const soundRef: StorageReference = ref(storage, `Sounds/${uuidv4()}.mp3`);
-    // if (audioBuffer) await uploadBytes(soundRef, audioBuffer);
-
-    // const assemblyClient: AssemblyAI = new AssemblyAI({ apiKey: process.env.ASSEMBLY_AI_API_KEY! });
-    // const audioUrl: string = await getDownloadURL(soundRef);
-    // const assemblyConfig: { audio_url: string } = { audio_url: audioUrl };
-
-    // const transcript: Transcript = await assemblyClient.transcripts.transcribe(assemblyConfig);
-
-    // const replicate: Replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
-    // const input: { width: number, height: number, prompt: string, negative_prompt: string, scheduler: string, num_outputs: number, guidance_scale: number, num_inference_steps: number } = {
-    //     width: 800,
-    //     height: 1200,
-    //     prompt: content[0].imagePrompt,
-    //     negative_prompt: 'worst quality, low quality',
-    //     scheduler: 'K_EULER',
-    //     num_outputs: 1,
-    //     guidance_scale: 0,
-    //     num_inference_steps: 4,
-    // };
-    // // eslint-disable-next-line @typescript-eslint/typedef
-    // const [ object ] = await replicate.run('bytedance/sdxl-lightning-4step:5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637', { input });
-    // await writeFile('./output.png', object);
-    // const imageRef: StorageReference = ref(storage, `Images/${uuidv4()}.png`);
-    // await uploadBytes(imageRef, object);
-    // try {
-    //     const textOutput = await object[0].text();
-    //     console.log('Text output:', textOutput);
-    // } catch (err) {
-    //     console.log('Text error:', err);
-    // }
-
-    // try {
-    //     const jsonOutput = await object[0].json();
-    //     console.log('JSON output:', jsonOutput);
-    // } catch (err) {
-    //     console.log('JSON error:', err);
-    // }
-
-    // try {
-    //     const bufferOutput = await object[0].arrayBuffer();
-    //     console.log('Buffer output:', bufferOutput);
-    // } catch (err) {
-    //     console.log('Buffer error:', err);
-    // }
-    // const base64Image: string = 'data:image/png;base64' + await ConvertImage(output);
 }
 
 async function generateContent(prompt: string): Promise<ContentType[]> {
@@ -128,11 +82,11 @@ async function generateContent(prompt: string): Promise<ContentType[]> {
     throw new Error('Incorrect content format');
 }
 
-async function generateAudioAndCaption(contents: ContentType[]): Promise<AudioAndCaptionType[]> {
+async function generateTranscript(contents: ContentType[]): Promise<Transcript[]> {
     const textToSpeechClient: TextToSpeechClient = new textToSpeech.TextToSpeechClient({ apiKey: process.env.FIREBASE_API_KEY });
     const assemblyClient: AssemblyAI = new AssemblyAI({ apiKey: process.env.ASSEMBLY_AI_API_KEY! });
 
-    const result: AudioAndCaptionType[] = await Promise.all(contents.map(async ({ contentText }: { contentText: string }): Promise<AudioAndCaptionType> => {
+    const result: Transcript[] = await Promise.all(contents.map(async ({ contentText }: { contentText: string }): Promise<Transcript> => {
         const request: protos.google.cloud.texttospeech.v1.ISynthesizeSpeechRequest = {
             input: { text: contentText },
             voice: { languageCode: 'en-US', ssmlGender: 'NEUTRAL' },
@@ -144,16 +98,31 @@ async function generateAudioAndCaption(contents: ContentType[]): Promise<AudioAn
 
         if (!audioBuffer) throw new Error('Failed to generate audio');
 
-        const fileName: string = uuidv4() + '.mp3';
-        const filePath: string = path.join(process.cwd(), 'public', 'temp', fileName);
+        if (process.env.MODE === 'development') {
+            const app: FirebaseApp = initializeApp(firebaseConfig);
+            const storage: FirebaseStorage = getStorage(app);
 
-        await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
-        await writeFile(filePath, audioBuffer);
+            const soundRef: StorageReference = ref(storage, `Sounds/${uuidv4()}.mp3`);
+            if (audioBuffer) await uploadBytes(soundRef, audioBuffer);
 
-        const assemblyConfig: { audio_url: string } = { audio_url: filePath };
-        const transcript: Transcript = await assemblyClient.transcripts.transcribe(assemblyConfig);
+            const audioUrl: string = await getDownloadURL(soundRef);
 
-        return { audioUri: filePath, caption: transcript };
+            const assemblyConfig: { audio_url: string } = { audio_url: audioUrl };
+            const transcript: Transcript = await assemblyClient.transcripts.transcribe(assemblyConfig);
+
+            return transcript;
+        } else {
+            const fileName: string = uuidv4() + '.mp3';
+            const filePath: string = path.join(process.cwd(), 'public', 'temp', 'voices', fileName);
+
+            await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+            await writeFile(filePath, audioBuffer);
+
+            const assemblyConfig: { audio_url: string } = { audio_url: filePath };
+            const transcript: Transcript = await assemblyClient.transcripts.transcribe(assemblyConfig);
+
+            return transcript;
+        }
     }));
 
     return result;
@@ -183,15 +152,15 @@ async function generateImages(contents: ContentType[]): Promise<string[]> {
     return ['result'];
 }
 
-function generateVideoComposition(audiosAndCaptions: AudioAndCaptionType[], imageUris: string[]): JSX.Element {
-    const duration: number = audiosAndCaptions[-1].caption.audio_end_at as number;
-    console.log(duration);
-    // return (
-    //     <Composition id="video" component={Video} durationInFrames={duration} fps={30} width={800} height={1200}>
-
-    //     </Composition>
-    // );
-}
+type firebaseConfigurationType = {
+    apiKey: string;
+    authDomain: string;
+    projectId: string;
+    storageBucket: string;
+    messagingSenderId: string;
+    appId: string;
+    measurementId: string;
+};
 
 type GeminiConfigurationType = {
     temperature: number;
@@ -221,9 +190,4 @@ type audioResponseType = [
 type ContentType = {
     imagePrompt: string;
     contentText: string;
-};
-
-type AudioAndCaptionType = {
-    audioUri: string;
-    caption: Transcript;
 };

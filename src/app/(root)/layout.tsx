@@ -8,7 +8,7 @@ export const metadata: object = {
 
 export default function RootLayout({ children }: { children: ReactNode }): JSX.Element {
     return (
-        <div className="md:mx-auto md:max-w-3xl px-4">
+        <div className="max-w-3xl md:mx-auto px-4">
             <Header />
             { children }
         </div>
