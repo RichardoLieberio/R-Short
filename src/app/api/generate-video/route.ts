@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { writeFile } from 'fs/promises';
 
+import { eq } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
 import { v4 as uuidv4 } from 'uuid';
 import { FirebaseApp, initializeApp } from 'firebase/app';
@@ -12,7 +13,7 @@ import { GoogleGenerativeAI, GenerativeModel, ChatSession, GenerateContentResult
 import textToSpeech, { protos, TextToSpeechClient } from '@google-cloud/text-to-speech';
 import { AssemblyAI, Transcript } from 'assemblyai';
 
-import { db, User, Video } from '@database';
+import { db, User } from '@database';
 
 const firebaseConfig: firebaseConfigurationType = {
     apiKey: process.env.FIREBASE_API_KEY!,
@@ -24,13 +25,28 @@ const firebaseConfig: firebaseConfigurationType = {
     measurementId: process.env.FIREBASE_MEASUREMENT_ID!,
 };
 
-export async function GET(): Promise<NextResponse> {
-    const { userId }: { userId: string | null } = await auth();
-
-    const id: string = uuidv4();
-    const prompt: string = 'Write a script and AI image prompt in pixel art format for each scene to generate a 30 second video based on the following storyboard:\n\n\"\"\"\nA man who frequently lies finds himself in need of help, but no one believes him.\n\"\"\"\n\nThe output should be provided in JSON format with imagePrompt and contentText as fields.';
-
+export async function POST(req: Request): Promise<NextResponse> {
     try {
+        const { userId }: { userId: string | null } = await auth();
+        if (!userId) throw new Error('You are not authenticated.');
+
+        const user: { id: number, role: 'user' | 'admin', coin: number } | undefined = await db.select({ id: User.id, role: User.role, coin: User.coin })
+            .from(User)
+            .where(eq(User.clerk_id, userId))
+            .limit(1)
+            .then((res) => res[0]);
+        if (!user) throw new Error('Something went wrong.');
+
+        if (user.role === 'admin' || user.coin > 0) {
+            const body: { storyboard: string, style: string, customSyle: string } = await req.json();
+            return NextResponse.json({ message: 'Success', body }, { status: 200 });
+        }
+
+        throw new Error("You don't have any coins.");
+
+        const id: string = uuidv4();
+        const prompt: string = 'Write a script and AI image prompt in {format} format for each scene to generate a 30 second video based on the following storyboard:\n\n\"\"\"\n{storyboard}\n\"\"\"\n\nThe output should be provided in JSON format with imagePrompt and contentText as fields.';
+
         const contents: ContentType[] = await generateContent(prompt);
         const [ transcripts, images ]: [ Transcript[], string[] ] = await Promise.all([ generateTranscript(id, contents), generateImages(contents) ]);
 
