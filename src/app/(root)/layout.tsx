@@ -1,5 +1,5 @@
 import { ReactNode, JSX } from 'react';
-import Header from '@/components/Header';
+import Header from '@components/Header';
 
 export const metadata: object = {
     title: 'R Short - AI Powered Short Video Generator',

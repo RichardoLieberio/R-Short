@@ -1,6 +1,11 @@
 import { JSX } from 'react';
 import { SignIn } from '@clerk/nextjs';
-import ClerkForm from '@/components/ClerkForm';
+import ClerkForm from '@components/ClerkForm';
+
+export const metadata: object = {
+    title: 'R Short - Login',
+    description: 'Access your R Short account to generate AI-powered short videos effortlessly.',
+};
 
 export default function LoginPage(): JSX.Element {
     return (
