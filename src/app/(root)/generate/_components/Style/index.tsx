@@ -65,7 +65,7 @@ export default function Style({ form }: formType): JSX.Element {
                 </Carousel>
                 {
                     customStyle && <FormControl className="!mt-8">
-                        <Input {...field} placeholder="Write your custom style..." />
+                        <Input {...field} className="text-sm md:text-base" placeholder="Write your custom style..." />
                     </FormControl>
                 }
                 <FormMessage />

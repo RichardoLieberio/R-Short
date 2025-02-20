@@ -16,13 +16,24 @@ export function useGenerateForm(): useGenerateFormReturn {
         if (!isSubmitting) {
             try {
                 setIsSubmitting(true);
-                const response: Response = await fetch('/api/generate-video', {
+                const response: Response = await fetch('/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(values),
                 });
-                const result: unknown = await response.json();
-                console.log(result);
+
+                if (response.ok) {
+                    const result: unknown = await response.json();
+                    console.log(result);
+                } else if (response.status === 429) {
+                    const { errors }: { errors: { style?: string[], duration?: string[], storyboard?: string[] } } = await response.json();
+                    Object.entries(errors).forEach(([ key, message ]: [ string, string[] ]) => {
+                        form.setError(key as keyof z.infer<typeof formSchema>, {
+                            type: 'server',
+                            message: message[0] || 'Invalid input',
+                        });
+                    });
+                }
             } catch (error) {
                 console.error(error);
             } finally {
@@ -31,5 +42,5 @@ export function useGenerateForm(): useGenerateFormReturn {
         }
     }
 
-    return { form, onSubmit };
+    return { isSubmitting, form, onSubmit };
 }

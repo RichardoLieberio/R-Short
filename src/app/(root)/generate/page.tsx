@@ -13,7 +13,7 @@ import { Form } from '@components/shadcn/form';
 import { Button } from '@components/shadcn/button';
 
 export default function GeneratePage(): JSX.Element {
-    const { form, onSubmit }: useGenerateFormReturn = useGenerateForm();
+    const { isSubmitting, form, onSubmit }: useGenerateFormReturn = useGenerateForm();
 
     return (
         <div className="mt-12 md:mt-16 mb-16">
@@ -22,7 +22,7 @@ export default function GeneratePage(): JSX.Element {
                     <Style form={form} />
                     <Duration form={form} />
                     <Storyboard form={form} />
-                    <Button type="submit">Submit</Button>
+                    <Button type="submit" disabled={isSubmitting}>Submit</Button>
                 </form>
             </Form>
         </div>

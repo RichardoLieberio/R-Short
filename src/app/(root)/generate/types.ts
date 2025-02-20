@@ -3,6 +3,7 @@ import { z } from 'zod';
 import formSchema from '@schema/formSchema';
 
 export type useGenerateFormReturn = {
+    isSubmitting: boolean;
     form: UseFormReturn<z.infer<typeof formSchema>>;
     onSubmit: (values: z.infer<typeof formSchema>) => Promise<void>;
 };

@@ -14,7 +14,7 @@ export default function Storyboard({ form }: formType): JSX.Element {
             <FormItem>
                 <FormLabel>Storyboard</FormLabel>
                 <FormControl>
-                    <Textarea { ...field } placeholder="Write your storyboard..." />
+                    <Textarea { ...field } className="text-sm md:text-base" placeholder="Write your storyboard..." />
                 </FormControl>
                 <FormMessage />
             </FormItem>
