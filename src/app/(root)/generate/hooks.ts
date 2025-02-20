@@ -23,8 +23,7 @@ export function useGenerateForm(): useGenerateFormReturn {
                 });
 
                 if (response.ok) {
-                    const result: unknown = await response.json();
-                    console.log(result);
+                    setStatus('done');
                 } else if (response.status === 429) {
                     const { errors }: { errors: { style?: string[], duration?: string[], storyboard?: string[] } } = await response.json();
                     Object.entries(errors).forEach(([ key, message ]: [ string, string[] ]) => {
@@ -33,8 +32,8 @@ export function useGenerateForm(): useGenerateFormReturn {
                             message: message[0] || 'Invalid input',
                         });
                     });
+                    setStatus('error');
                 }
-                setStatus('done');
             } catch (error) {
                 console.error(error);
                 setStatus('error');

@@ -61,19 +61,10 @@ export async function POST(req: Request): Promise<NextResponse> {
                     return { audioUris: JSON.stringify(audioUris), imageUris: JSON.stringify(imageUris), captions: JSON.stringify(captions) };
                 });
 
-            const id: number = await db.transaction(async (tx) => {
-                try {
-                    const [ inserted ]: { insertedId: number }[] = await db.insert(Video).values({ user_id: user.id, audio_uri: result.audioUris, image_uri: result.audioUris, captions: result.captions }).returning({ insertedId: Video.id });
-                    await db.update(User).set({ coin: sql`${User.coin} - 1` }).where(and(eq(User.id, user.id), eq(User.role, 'user')));
-                    return inserted.insertedId;
-                } catch (error) {
-                    tx.rollback();
-                    console.error(error);
-                    throw new Error('Failed to save user generation');
-                }
-            });
+            const [ inserted ]: { insertedId: number }[] = await db.insert(Video).values({ user_id: user.id, audio_uri: result.audioUris, image_uri: result.audioUris, captions: result.captions }).returning({ insertedId: Video.id });
+            await db.update(User).set({ coin: sql`${User.coin} - 1` }).where(and(eq(User.id, user.id), eq(User.role, 'user')));
 
-            return NextResponse.json({ message: 'Success', id }, { status: 200 });
+            return NextResponse.json({ message: 'Success', id: inserted.insertedId }, { status: 200 });
         }
 
         throw new Error("You don't have any coins.");
@@ -160,7 +151,7 @@ async function generateTranscript(id: string, contents: ContentType[]): Promise<
 }
 
 async function generateImages(id: string, contents: ContentType[]): Promise<string[]> {
-    const replicate: Replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
+    const replicate: Replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN, useFileOutput: false });
 
     const result: string[] = await Promise.all(contents.map(async ({ imagePrompt }: { imagePrompt: string }, index): Promise<string> => {
         const input: ImageInputConfigurationType = {
@@ -174,13 +165,19 @@ async function generateImages(id: string, contents: ContentType[]): Promise<stri
             num_inference_steps: 4,
         };
 
-        const [ object ]: ArrayBuffer[] = await replicate.run('bytedance/sdxl-lightning-4step:5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637', { input }) as ArrayBuffer[];
+        const [ object ]: string[] = await replicate.run('bytedance/sdxl-lightning-4step:5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637', { input }) as string[];
 
         const app: FirebaseApp = initializeApp(firebaseConfig);
         const storage: FirebaseStorage = getStorage(app);
 
         const imageRef: StorageReference = ref(storage, `${id}/Image/${index + 1}.png`);
-        if (object) await uploadBytes(imageRef, object);
+        if (object) {
+            const response: Response = await fetch(object);
+            if (!response.ok) throw new Error('Failed to fetch generated image');
+
+            const blob: Blob = await response.blob();
+            await uploadBytes(imageRef, blob);
+        }
 
         const imageUri: string = await getDownloadURL(imageRef);
 
