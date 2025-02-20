@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/typedef */
 
-import { pgTable, integer, pgEnum, varchar, boolean, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, integer, pgEnum, varchar, boolean, json, timestamp } from 'drizzle-orm/pg-core';
 
 export const userRoleEnum = pgEnum('user_role', [ 'user', 'admin' ]);
 export const videoStatusEnum = pgEnum('status', [ 'success', 'pending', 'failed' ]);
@@ -27,7 +27,8 @@ export const User = pgTable('users', {
 export const Video = pgTable('videos', {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     user_id: integer().notNull().references(() => User.id),
-    url: varchar(),
-    status: videoStatusEnum().notNull().default('pending'),
+    audio_uri: json(),
+    image_uri: json(),
+    captions: json(),
     created_at: timestamp().notNull().defaultNow(),
 });

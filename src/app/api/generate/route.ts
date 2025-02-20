@@ -1,21 +1,22 @@
 import { NextResponse } from 'next/server';
-
-import path from 'path';
-import fs from 'fs';
-import { writeFile } from 'fs/promises';
-
-import { eq } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
 import { v4 as uuidv4 } from 'uuid';
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import { FirebaseStorage, StorageReference, getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { GoogleGenerativeAI, GenerativeModel, ChatSession, GenerateContentResult } from '@google/generative-ai';
 import textToSpeech, { protos, TextToSpeechClient } from '@google-cloud/text-to-speech';
-import { AssemblyAI, Transcript } from 'assemblyai';
+import { AssemblyAI, Transcript, TranscriptWord } from 'assemblyai';
+import Replicate from 'replicate';
 
-import { db, User } from '@database';
+import { z } from 'zod';
+import formSchema from '@schema/formSchema';
 
-const firebaseConfig: firebaseConfigurationType = {
+import { FirebaseConfigurationType, GeminiConfigurationType, ContentType, AudioResponseType, ImageInputConfigurationType } from './types';
+
+import { db, User, Video } from '@database';
+
+const firebaseConfig: FirebaseConfigurationType = {
     apiKey: process.env.FIREBASE_API_KEY!,
     authDomain: process.env.FIREBASE_AUTH_DOMAIN!,
     projectId: process.env.FIREBASE_PROJECT_ID!,
@@ -38,20 +39,47 @@ export async function POST(req: Request): Promise<NextResponse> {
         if (!user) throw new Error('Something went wrong.');
 
         if (user.role === 'admin' || user.coin > 0) {
-            const body: { storyboard: string, style: string, customSyle: string } = await req.json();
-            return NextResponse.json({ message: 'Success', body }, { status: 200 });
+            const body: { style: unknown, duration: unknown, storyboard: unknown } = await req.json();
+            const data: { style: string, duration: string, storyboard: string } = formSchema.parse(body);
+
+            const uuid: string = uuidv4();
+            const prompt: string = `Write a script and AI image prompt in ${data.style.toLowerCase()} format for each scene to generate a ${data.duration} second video based on the following storyboard:\n\n\"\"\"\n${data.storyboard}\n\"\"\"\n\nThe output should be provided in JSON format with imagePrompt and contentText as fields.`;
+
+            const contents: ContentType[] = await generateContent(prompt);
+            const result: { audioUris: string, imageUris: string, captions: string } = await Promise.all([ generateTranscript(uuid, contents), generateImages(uuid, contents) ])
+                .then(([ transcripts, images ]: [ Transcript[], string[] ]) => {
+                    const audioUris: string[] = [];
+                    const imageUris: string[] = [];
+                    const captions: TranscriptWord[][] = [];
+
+                    for (let i: number = 0; i < contents.length; i ++) {
+                        audioUris.push(transcripts[i].audio_url);
+                        imageUris.push(images[i]);
+                        captions.push(transcripts[i].words!);
+                    }
+
+                    return { audioUris: JSON.stringify(audioUris), imageUris: JSON.stringify(imageUris), captions: JSON.stringify(captions) };
+                });
+
+            const id: number = await db.transaction(async (tx) => {
+                try {
+                    const [ inserted ]: { insertedId: number }[] = await db.insert(Video).values({ user_id: user.id, audio_uri: result.audioUris, image_uri: result.audioUris, captions: result.captions }).returning({ insertedId: Video.id });
+                    await db.update(User).set({ coin: sql`${User.coin} - 1` }).where(and(eq(User.id, user.id), eq(User.role, 'user')));
+                    return inserted.insertedId;
+                } catch (error) {
+                    tx.rollback();
+                    console.error(error);
+                    throw new Error('Failed to save user generation');
+                }
+            });
+
+            return NextResponse.json({ message: 'Success', id }, { status: 200 });
         }
 
         throw new Error("You don't have any coins.");
-
-        const id: string = uuidv4();
-        const prompt: string = 'Write a script and AI image prompt in {format} format for each scene to generate a 30 second video based on the following storyboard:\n\n\"\"\"\n{storyboard}\n\"\"\"\n\nThe output should be provided in JSON format with imagePrompt and contentText as fields.';
-
-        const contents: ContentType[] = await generateContent(prompt);
-        const [ transcripts, images ]: [ Transcript[], string[] ] = await Promise.all([ generateTranscript(id, contents), generateImages(contents) ]);
-
-        return NextResponse.json({ message: 'Success', transcripts, images }, { status: 200 });
     } catch (error) {
+        if (error instanceof z.ZodError) return NextResponse.json({ errors: error.flatten().fieldErrors }, { status: 429 });
+
         console.error(error);
         return NextResponse.json({ message: 'Failed', error }, { status: 400 });
     }
@@ -98,112 +126,66 @@ async function generateContent(prompt: string): Promise<ContentType[]> {
     throw new Error('Incorrect content format');
 }
 
-async function generateTranscript(contents: ContentType[]): Promise<Transcript[]> {
+async function generateTranscript(id: string, contents: ContentType[]): Promise<Transcript[]> {
     const textToSpeechClient: TextToSpeechClient = new textToSpeech.TextToSpeechClient({ apiKey: process.env.FIREBASE_API_KEY });
     const assemblyClient: AssemblyAI = new AssemblyAI({ apiKey: process.env.ASSEMBLY_AI_API_KEY! });
 
-    const result: Transcript[] = await Promise.all(contents.map(async ({ contentText }: { contentText: string }): Promise<Transcript> => {
+    const result: Transcript[] = await Promise.all(contents.map(async ({ contentText }: { contentText: string }, index): Promise<Transcript> => {
         const request: protos.google.cloud.texttospeech.v1.ISynthesizeSpeechRequest = {
             input: { text: contentText },
             voice: { languageCode: 'en-US', ssmlGender: 'NEUTRAL' },
             audioConfig: { audioEncoding: 'MP3' },
         };
 
-        const [ audioResponse ]: audioResponseType = await textToSpeechClient.synthesizeSpeech(request);
+        const [ audioResponse ]: AudioResponseType = await textToSpeechClient.synthesizeSpeech(request);
         const audioBuffer: Uint8Array | null = audioResponse.audioContent instanceof Uint8Array ? audioResponse.audioContent : null;
 
         if (!audioBuffer) throw new Error('Failed to generate audio');
 
-        if (process.env.MODE === 'development') {
-            const app: FirebaseApp = initializeApp(firebaseConfig);
-            const storage: FirebaseStorage = getStorage(app);
+        const app: FirebaseApp = initializeApp(firebaseConfig);
+        const storage: FirebaseStorage = getStorage(app);
 
-            const soundRef: StorageReference = ref(storage, `Sounds/${uuidv4()}.mp3`);
-            if (audioBuffer) await uploadBytes(soundRef, audioBuffer);
+        const audioRef: StorageReference = ref(storage, `${id}/Audio/${index + 1}.mp3`);
+        if (audioBuffer) await uploadBytes(audioRef, audioBuffer);
 
-            const audioUrl: string = await getDownloadURL(soundRef);
+        const audioUrl: string = await getDownloadURL(audioRef);
 
-            const assemblyConfig: { audio_url: string } = { audio_url: audioUrl };
-            const transcript: Transcript = await assemblyClient.transcripts.transcribe(assemblyConfig);
+        const assemblyConfig: { audio_url: string } = { audio_url: audioUrl };
+        const transcript: Transcript = await assemblyClient.transcripts.transcribe(assemblyConfig);
 
-            return transcript;
-        } else {
-            const fileName: string = uuidv4() + '.mp3';
-            const filePath: string = path.join(process.cwd(), 'public', 'temp', 'voices', fileName);
-
-            await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
-            await writeFile(filePath, audioBuffer);
-
-            const assemblyConfig: { audio_url: string } = { audio_url: filePath };
-            const transcript: Transcript = await assemblyClient.transcripts.transcribe(assemblyConfig);
-
-            return transcript;
-        }
+        return transcript;
     }));
 
     return result;
 }
 
-async function generateImages(contents: ContentType[]): Promise<string[]> {
-    // const replicate: Replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN, useFileOutput: false });
-    // contents = [ contents[0] ];
+async function generateImages(id: string, contents: ContentType[]): Promise<string[]> {
+    const replicate: Replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
-    // const result: string[] = await Promise.all(contents.map(async ({ imagePrompt }: { imagePrompt: string }): Promise<string> => {
-    //     const input: imageInputConfigurationType = {
-    //         width: 800,
-    //         height: 1200,
-    //         prompt: imagePrompt,
-    //         negative_prompt: 'worst quality, low quality',
-    //         scheduler: 'K_EULER',
-    //         num_outputs: 1,
-    //         guidance_scale: 0,
-    //         num_inference_steps: 4,
-    //     };
+    const result: string[] = await Promise.all(contents.map(async ({ imagePrompt }: { imagePrompt: string }, index): Promise<string> => {
+        const input: ImageInputConfigurationType = {
+            width: 800,
+            height: 1200,
+            prompt: imagePrompt,
+            negative_prompt: 'worst quality, low quality',
+            scheduler: 'K_EULER',
+            num_outputs: 1,
+            guidance_scale: 0,
+            num_inference_steps: 4,
+        };
 
-    //     const [ object ]: string[] = await replicate.run('bytedance/sdxl-lightning-4step:5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637', { input }) as string[];
+        const [ object ]: ArrayBuffer[] = await replicate.run('bytedance/sdxl-lightning-4step:5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637', { input }) as ArrayBuffer[];
 
-    //     return object;
-    // }));
+        const app: FirebaseApp = initializeApp(firebaseConfig);
+        const storage: FirebaseStorage = getStorage(app);
 
-    return ['result'];
+        const imageRef: StorageReference = ref(storage, `${id}/Image/${index + 1}.png`);
+        if (object) await uploadBytes(imageRef, object);
+
+        const imageUri: string = await getDownloadURL(imageRef);
+
+        return imageUri;
+    }));
+
+    return result;
 }
-
-type firebaseConfigurationType = {
-    apiKey: string;
-    authDomain: string;
-    projectId: string;
-    storageBucket: string;
-    messagingSenderId: string;
-    appId: string;
-    measurementId: string;
-};
-
-type GeminiConfigurationType = {
-    temperature: number;
-    topP: number;
-    topK: number;
-    maxOutputTokens: number;
-    responseMimeType: string;
-};
-
-type imageInputConfigurationType = {
-    width: number;
-    height: number;
-    prompt: string;
-    negative_prompt: string;
-    scheduler: string;
-    num_outputs: number;
-    guidance_scale: number;
-    num_inference_steps: number
-};
-
-type audioResponseType = [
-    protos.google.cloud.texttospeech.v1.ISynthesizeSpeechResponse,
-    protos.google.cloud.texttospeech.v1.ISynthesizeSpeechRequest | undefined,
-    object | undefined
-];
-
-type ContentType = {
-    imagePrompt: string;
-    contentText: string;
-};
