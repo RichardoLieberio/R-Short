@@ -7,15 +7,9 @@ import { useGenerateFormReturn } from './types';
 
 export function useGenerateForm(): useGenerateFormReturn {
     const [ isSubmitting, setIsSubmitting ]: [ boolean, Dispatch<SetStateAction<boolean>> ] = useState(false);
-    const [ customStyle, setCustomStyle ]: [ boolean, Dispatch<SetStateAction<boolean>> ] = useState(false);
 
     const form: UseFormReturn<z.infer<typeof formSchema>> = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            style: 'cartoon',
-            duration: undefined,
-            storyboard: undefined,
-        },
     });
 
     async function onSubmit(values: z.infer<typeof formSchema>): Promise<void> {
@@ -37,5 +31,5 @@ export function useGenerateForm(): useGenerateFormReturn {
         }
     }
 
-    return { customStyle, setCustomStyle, form, onSubmit };
+    return { form, onSubmit };
 }

@@ -1,16 +1,19 @@
 import Image from 'next/image';
-import { JSX } from 'react';
+import { JSX, Dispatch, SetStateAction, useState } from 'react';
 import { z } from 'zod';
 import { ControllerRenderProps } from 'react-hook-form';
 
-import { StyleProps } from '../../types';
+import { formType } from '../../types';
 import formSchema from '@schema/formSchema';
 
-import { FormField, FormItem, FormLabel } from '@components/shadcn/form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@components/shadcn/form';
 import { Carousel, CarouselContent, CarouselItem } from '@components/shadcn/carousel';
 import { Card } from '@components/shadcn/card';
+import { Input } from '@components/shadcn/input';
 
-export default function Style({ customStyle, setCustomStyle, form }: StyleProps): JSX.Element {
+export default function Style({ form }: formType): JSX.Element {
+    const [ customStyle, setCustomStyle ]: [ boolean, Dispatch<SetStateAction<boolean>> ] = useState(false);
+
     const categories: { style: string, text: string, image: string }[] = [
         { style: '', text: 'Custom', image: '' },
         { style: 'cartoon', text: 'Cartoon', image: '/Cartoon.png' },
@@ -41,7 +44,7 @@ export default function Style({ customStyle, setCustomStyle, form }: StyleProps)
                                                 field.onChange(style);
                                             } else {
                                                 setCustomStyle(true);
-                                                field.onChange('');
+                                                field.onChange(undefined);
                                             }
                                         }}
                                         className={`${((customStyle && !style) || (!customStyle && field.value === style)) && 'border-2 border-primary'} w-full h-full relative flex flex-col items-center justify-center cursor-pointer overflow-hidden`}
@@ -60,6 +63,12 @@ export default function Style({ customStyle, setCustomStyle, form }: StyleProps)
                         }
                     </CarouselContent>
                 </Carousel>
+                {
+                    customStyle && <FormControl className="!mt-8">
+                        <Input {...field} placeholder="Write your custom style..." />
+                    </FormControl>
+                }
+                <FormMessage />
             </FormItem>
         )} />
     );
