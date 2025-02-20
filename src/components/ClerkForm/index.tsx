@@ -1,6 +1,6 @@
 import { ReactNode, JSX } from 'react';
 import { ClerkLoading, ClerkLoaded } from '@clerk/nextjs';
-import Skeleton from '@/components/Skeleton';
+import Skeleton from '@components/Skeleton';
 
 export default function ClerkForm({ children }: { children: ReactNode }): JSX.Element {
     return (
