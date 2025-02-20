@@ -5,6 +5,14 @@ import { pgTable, integer, pgEnum, varchar, boolean, timestamp } from 'drizzle-o
 export const userRoleEnum = pgEnum('user_role', [ 'user', 'admin' ]);
 export const videoStatusEnum = pgEnum('status', [ 'success', 'pending', 'failed' ]);
 
+export const Faq = pgTable('faqs', {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    question: varchar({ length: 255 }).notNull(),
+    answer: varchar({ length: 255 }).notNull(),
+    position: integer().unique().notNull(),
+    created_at: timestamp().notNull().defaultNow(),
+});
+
 export const User = pgTable('users', {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     clerk_id: varchar({ length: 50 }).notNull().unique(),
