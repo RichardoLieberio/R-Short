@@ -44,7 +44,7 @@ export default function Style({ form }: formType): JSX.Element {
                                                 field.onChange(style);
                                             } else {
                                                 setCustomStyle(true);
-                                                field.onChange(undefined);
+                                                field.onChange('');
                                             }
                                         }}
                                         className={`${((customStyle && !style) || (!customStyle && field.value === style)) && 'border-2 border-primary'} w-full h-full relative flex flex-col items-center justify-center cursor-pointer overflow-hidden`}

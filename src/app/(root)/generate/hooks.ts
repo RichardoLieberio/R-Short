@@ -6,16 +6,16 @@ import formSchema from '@schema/formSchema';
 import { useGenerateFormReturn } from './types';
 
 export function useGenerateForm(): useGenerateFormReturn {
-    const [ isSubmitting, setIsSubmitting ]: [ boolean, Dispatch<SetStateAction<boolean>> ] = useState(false);
+    const [ status, setStatus ]: [ string, Dispatch<SetStateAction<string>> ] = useState('');
 
     const form: UseFormReturn<z.infer<typeof formSchema>> = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
     });
 
     async function onSubmit(values: z.infer<typeof formSchema>): Promise<void> {
-        if (!isSubmitting) {
+        if (!status) {
             try {
-                setIsSubmitting(true);
+                setStatus('loading');
                 const response: Response = await fetch('/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -34,13 +34,13 @@ export function useGenerateForm(): useGenerateFormReturn {
                         });
                     });
                 }
+                setStatus('done');
             } catch (error) {
                 console.error(error);
-            } finally {
-                setIsSubmitting(false);
+                setStatus('error');
             }
         }
     }
 
-    return { isSubmitting, form, onSubmit };
+    return { status, setStatus, form, onSubmit };
 }

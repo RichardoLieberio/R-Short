@@ -8,12 +8,13 @@ import { useGenerateForm } from './hooks';
 import Style from './_components/Style';
 import Duration from './_components/Duration';
 import Storyboard from './_components/StoryBoard';
+import Loading from './_components/Loading';
 
 import { Form } from '@components/shadcn/form';
 import { Button } from '@components/shadcn/button';
 
 export default function GeneratePage(): JSX.Element {
-    const { isSubmitting, form, onSubmit }: useGenerateFormReturn = useGenerateForm();
+    const { status, setStatus, form, onSubmit }: useGenerateFormReturn = useGenerateForm();
 
     return (
         <div className="mt-12 md:mt-16 mb-16">
@@ -22,7 +23,8 @@ export default function GeneratePage(): JSX.Element {
                     <Style form={form} />
                     <Duration form={form} />
                     <Storyboard form={form} />
-                    <Button type="submit" disabled={isSubmitting}>Submit</Button>
+                    <Button type="submit" disabled={!!status}>Submit</Button>
+                    <Loading status={status} setStatus={setStatus} />
                 </form>
             </Form>
         </div>
