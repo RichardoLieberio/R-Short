@@ -21,6 +21,7 @@
         "@radix-ui/react-label": "^2.1.2",
         "@radix-ui/react-slot": "^1.1.2",
         "assemblyai": "^4.9.0",
+        "bufferutil": "^4.0.9",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "dotenv": "^16.4.7",
@@ -41,6 +42,7 @@
         "tailwind-merge": "^3.0.1",
         "tailwindcss-animate": "^1.0.7",
         "uuid": "^11.0.5",
+        "ws": "^8.18.0",
         "zod": "^3.24.2"
     },
     "devDependencies": {
@@ -48,6 +50,7 @@
         "@types/node": "^20",
         "@types/react": "^19",
         "@types/react-dom": "^19",
+        "@types/ws": "^8.5.14",
         "drizzle-kit": "^0.30.4",
         "eslint": "^9",
         "eslint-config-next": "15.1.7",
