@@ -1,9 +1,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { JSX, Suspense } from 'react';
+import { JSX } from 'react';
 
 import { Button } from '@components/shadcn/button';
-import Skeleton from '@components/Skeleton';
 import Faqs from '@components/Faqs';
 
 export default function RootPage(): JSX.Element {
@@ -21,9 +20,7 @@ export default function RootPage(): JSX.Element {
             <Image src="/Pattern 3.png" alt="Pattern 3" width="600" height="600" quality={40} className="absolute -top-60 left-1/2 -translate-x-1/2 z-[-1]" />
             <div className="mt-28 md:mt-32">
                 <h2 className="mb-4 text-lg md:text-xl">Frequently asked questions</h2>
-                <Suspense fallback={<Skeleton height="50px" count={6} />}>
-                    <Faqs />
-                </Suspense>
+                <Faqs />
             </div>
         </div>
     );

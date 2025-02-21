@@ -1,6 +1,5 @@
 
-import { useRouter } from 'next/navigation';
-import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import Link from 'next/link';
 import { Dispatch, SetStateAction, JSX } from 'react';
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@components/shadcn/alert-dialog';
 import { Button } from '@components/shadcn/button';
@@ -8,7 +7,6 @@ import { MdOutlineCheckCircleOutline, MdErrorOutline } from 'react-icons/md';
 import { useDots } from './hooks';
 
 export default function Loading({ status, setStatus }: { status: string, setStatus: Dispatch<SetStateAction<string>> }): JSX.Element {
-    const router: AppRouterInstance = useRouter();
     const dot: string = useDots();
 
     return (
@@ -27,7 +25,9 @@ export default function Loading({ status, setStatus }: { status: string, setStat
                             <AlertDialogDescription>Your content has been generated</AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <Button onClick={() => router.push('/dashboard')}>Go to dashboard</Button>
+                            <Link href="/dashboard">
+                                <Button>Go to dashboard</Button>
+                            </Link>
                         </AlertDialogFooter>
                     </>
                 }
