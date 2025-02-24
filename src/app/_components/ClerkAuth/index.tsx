@@ -25,7 +25,6 @@ export default async function ClerkAuth({ children }: { children: ReactNode }): 
 
         await client.users.updateUserMetadata(userId, {
             publicMetadata: { role: 'user', registered: true },
-            privateMetadata: { registered: true },
         });
     }
 
