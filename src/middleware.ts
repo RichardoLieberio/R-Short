@@ -1,11 +1,15 @@
 import { NextRequest } from 'next/server';
 import { createRouteMatcher, clerkMiddleware, ClerkMiddlewareAuth } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+import isAdmin from '@/utils/isAdmin';
 
-type isPublicRouteType = (req: NextRequest) => boolean;
-const isPublicRoute: isPublicRouteType = createRouteMatcher([ '/', '/register(.*)', '/login(.*)', '/api/webhook(.*)' ]);
+type routeType = (req: NextRequest) => boolean;
+const isPublicRoute: routeType = createRouteMatcher([ '/', '/register(.*)', '/login(.*)' ]);
+const isAdminRoute: routeType = createRouteMatcher([ '/admin(.*)' ]);
 
-export default clerkMiddleware(async function (auth: ClerkMiddlewareAuth, request: NextRequest): Promise<void> {
+export default clerkMiddleware(async function (auth: ClerkMiddlewareAuth, request: NextRequest): Promise<NextResponse | void> {
     if (!isPublicRoute(request)) await auth.protect();
+    if (isAdminRoute(request) && !isAdmin()) return NextResponse.redirect(new URL('/', request.url));
 });
 
 export const config: { matcher: string[] } = {
