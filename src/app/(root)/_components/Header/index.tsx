@@ -1,15 +1,20 @@
-import Image from 'next/image';
+import { JSX } from 'react';
+import { ClerkMiddlewareAuthObject, auth } from '@clerk/nextjs/server';
+
 import Link from 'next/link';
-import { JSX, Suspense } from 'react';
-import { auth } from '@clerk/nextjs/server';
-import { eq } from 'drizzle-orm';
-
-import { db, User } from '@database';
-
-import { SignedIn, SignedOut, UserButton, SignInButton, SignUpButton } from '@clerk/nextjs';
+import Image from 'next/image';
+import { SignedIn, SignedOut, UserButton, SignUpButton, SignInButton } from '@clerk/nextjs';
+import Coin from './_components/Coin';
 import { Button } from '@components/shadcn/button';
 
-export default function Header(): JSX.Element {
+export default async function Header(): Promise<JSX.Element> {
+    const { sessionClaims }: ClerkMiddlewareAuthObject = await auth();
+
+    type SessionClaims = { metadata?: { role?: string } };
+    const claims: SessionClaims = sessionClaims as SessionClaims;
+
+    const isAdmin: boolean = claims?.metadata?.role === 'admin';
+
     return (
         <header className="h-16 flex items-center gap-8">
             <Link href="/">
@@ -19,9 +24,11 @@ export default function Header(): JSX.Element {
                 <div className="flex-1 flex items-center justify-between gap-4">
                     <div className="flex-1 flex items-center gap-4">
                         <Link href="/dashboard" className="hover:underline">Dashboard</Link>
-                        <Suspense fallback={null}>
-                            <NavMenu />
-                        </Suspense>
+                        {
+                            isAdmin
+                                ? <Link href="/admin" className="hover:underline">Admin</Link>
+                                : <Coin />
+                        }
                     </div>
                     <UserButton />
                 </div>
@@ -37,29 +44,5 @@ export default function Header(): JSX.Element {
                 </div>
             </SignedOut>
         </header>
-    );
-}
-
-async function NavMenu(): Promise<JSX.Element | null> {
-    const { userId }: { userId: string | null } = await auth();
-    if (!userId) return null;
-
-    const user: { role: 'user' | 'admin', coin: number } | undefined = await db.select({ role: User.role, coin: User.coin })
-        .from(User)
-        .where(eq(User.clerk_id, userId))
-        .limit(1)
-        .then((res) => res[0]);
-
-    if (!user) return null;
-
-    if (user.role === 'admin') return (
-        <Link href="/admin" className="hover:underline">Admin</Link>
-    );
-
-    return (
-        <div className="ml-auto px-2 flex items-center gap-1 cursor-pointer">
-            <Image src="/Coin.png" alt="Coin" width="20" height="20" quality={40} />
-            { user.coin }
-        </div>
     );
 }
