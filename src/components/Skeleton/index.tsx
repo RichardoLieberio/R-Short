@@ -1,5 +1,5 @@
-import { JSX } from 'react';
 import { SkeletonProps } from './types';
+import { JSX } from 'react';
 import ReactSkeleton, { SkeletonTheme } from 'react-loading-skeleton';
 
 export default function Skeleton({ baseColor, highlightColor, width, height, borderRadius, count, className, containerClassName }: SkeletonProps): JSX.Element {

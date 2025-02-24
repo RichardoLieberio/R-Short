@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { JSX } from 'react';
 
 import { Button } from '@components/shadcn/button';
-import Faqs from '@components/Faqs';
+import Faqs from './_components/Faqs';
 
 export default function RootPage(): JSX.Element {
     return (
