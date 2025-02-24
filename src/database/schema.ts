@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/typedef */
 
-import { pgTable, integer, pgEnum, varchar, boolean, json, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, integer, pgEnum, varchar, json, timestamp } from 'drizzle-orm/pg-core';
 
 export const logs = {
     'user_created': (): string => `A new user was successfully created.`,
@@ -44,8 +44,6 @@ export const User = pgTable('users', {
     role: userRoleEnum().notNull().default('user'),
     coin: integer().notNull().default(2),
     created_at: timestamp().notNull().defaultNow(),
-    is_deleted: boolean().notNull().default(false),
-    deleted_at: timestamp(),
 });
 
 export const Video = pgTable('videos', {
