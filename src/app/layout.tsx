@@ -7,6 +7,8 @@ import 'react-loading-skeleton/dist/skeleton.css';
 import './globals.css';
 
 import { ClerkProvider } from '@clerk/nextjs';
+import ClerkAuth from './_components/ClerkAuth';
+import StoreProvider from './_components/StoreProvider';
 
 const dmSans: NextFont = DM_Sans({
     subsets: [ 'latin' ],
@@ -16,11 +18,15 @@ const dmSans: NextFont = DM_Sans({
 export default function RootLayout({ children }: { children: ReactNode }): JSX.Element {
     return (
         <ClerkProvider appearance={{ baseTheme: dark }}>
-            <html lang="en">
-                <body className={`${dmSans.className} w-full min-w-80 h-dvh relative text-sm md:text-base text-foreground bg-background overflow-x-hidden`}>
-                    { children }
-                </body>
-            </html>
+            <ClerkAuth>
+                <StoreProvider>
+                    <html lang="en">
+                        <body className={`${dmSans.className} w-full min-w-80 h-dvh relative text-sm md:text-base text-foreground bg-background overflow-x-hidden`}>
+                            { children }
+                        </body>
+                    </html>
+                </StoreProvider>
+            </ClerkAuth>
         </ClerkProvider>
     );
 }
