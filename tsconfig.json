@@ -24,7 +24,8 @@
             "@schema/*": ["./src/schema/*"],
             "@components/*": ["./src/components/*"],
             "@store": ["./src/store"],
-            "@store/*": ["./src/store/*"]
+            "@store/*": ["./src/store/*"],
+            "@utils/*": ["./src/utils/*"]
         }
     },
     "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
