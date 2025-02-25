@@ -8,7 +8,7 @@ import Image from 'next/image';
 import Skeleton from '@components/Skeleton';
 
 export default function Coin(): JSX.Element {
-    const [ getCoin, setGetCoin ]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(false);
+    const [ getCoin, setGetCoin ]: [ boolean, Dispatch<SetStateAction<boolean>> ] = useState(false);
 
     const coin: number | null = useAppSelector((state) => state.user.coin);
     const dispatch: AppDispatch = useAppDispatch();
