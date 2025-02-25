@@ -8,10 +8,11 @@ import { useGenerateForm } from './hooks';
 import Style from './_components/Style';
 import Duration from './_components/Duration';
 import Storyboard from './_components/StoryBoard';
-import Loading from './_components/Loading';
+import Alert from './_components/Alert';
 
 import { Form } from '@components/shadcn/form';
 import { Button } from '@components/shadcn/button';
+import { AlertDialog } from '@components/shadcn/alert-dialog';
 
 export default function GeneratePage(): JSX.Element {
     const { status, setStatus, form, onSubmit }: useGenerateFormReturn = useGenerateForm();
@@ -24,9 +25,11 @@ export default function GeneratePage(): JSX.Element {
                     <Duration form={form} />
                     <Storyboard form={form} />
                     <Button type="submit" disabled={!!status}>Submit</Button>
-                    <Loading status={status} setStatus={setStatus} />
                 </form>
             </Form>
+            <AlertDialog open={!!status}>
+                <Alert status={status} setStatus={setStatus} />
+            </AlertDialog>
         </div>
     );
 }

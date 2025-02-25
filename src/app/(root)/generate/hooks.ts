@@ -1,12 +1,15 @@
+import { useGenerateFormReturn } from './types';
 import { Dispatch, SetStateAction, useState } from 'react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, useForm } from 'react-hook-form';
 import formSchema from '@schema/formSchema';
-import { useGenerateFormReturn } from './types';
+import { AppDispatch, useAppDispatch } from '@store';
+import { reduceCoin } from '@store/user';
 
 export function useGenerateForm(): useGenerateFormReturn {
     const [ status, setStatus ]: [ string, Dispatch<SetStateAction<string>> ] = useState('');
+    const dispatch: AppDispatch = useAppDispatch();
 
     const form: UseFormReturn<z.infer<typeof formSchema>> = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -23,6 +26,7 @@ export function useGenerateForm(): useGenerateFormReturn {
                 });
 
                 if (response.ok) {
+                    dispatch(reduceCoin());
                     setStatus('done');
                 } else if (response.status === 429) {
                     const { errors }: { errors: { style?: string[], duration?: string[], storyboard?: string[] } } = await response.json();
@@ -32,11 +36,14 @@ export function useGenerateForm(): useGenerateFormReturn {
                             message: message[0] || 'Invalid input',
                         });
                     });
-                    setStatus('error');
+                    setStatus('Please correct the highlighted fields before submitting the form');
+                } else if (response.status === 400) {
+                    const { message }: { message: string } = await response.json();
+                    setStatus(message);
                 }
             } catch (error) {
                 console.error(error);
-                setStatus('error');
+                setStatus('Something went wrong');
             }
         }
     }
