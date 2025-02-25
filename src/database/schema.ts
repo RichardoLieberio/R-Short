@@ -4,11 +4,7 @@ import { pgTable, integer, pgEnum, varchar, json, timestamp } from 'drizzle-orm/
 
 export const logs = {
     'user_created': (): string => `A new user was successfully created.`,
-    'error_creating_user': (): string => `User creation failed.`,
-    'user_deleted': (): string => `The user was successfully deleted.`,
-    'error_deleting_user': (): string => `Failed to delete the user.`,
     'video_generated': (): string => `A video was generated successfully.`,
-    'error_generating_video': (): string => `Video generation failed.`,
     'coin_bought': (coins: number, price: string ): string => `Purchase of ${coins} coins at ${price} completed.`,
     'error_buying_coin': (coins: number, price: string ): string => `Failed to purchase ${coins} coins at ${price}.`,
     'admin:user_role_changed': (user: string, role: string): string => `Role of ${user} was changed to ${role}.`,
