@@ -65,7 +65,7 @@ export async function POST(req: Request): Promise<NextResponse> {
             const insertedId: number = await db.transaction(async (tx) => {
                 const [ [ { insertedId } ] ]: [ { insertedId: number }[], QueryResult<never>, QueryResult<never>] = await Promise.all([
                     tx.insert(Video)
-                        .values({ user_id: user.id, audio_uri: result.audioUris, image_uri: result.audioUris, captions: result.captions })
+                        .values({ user_id: user.id, audio_uri: result.audioUris, image_uri: result.imageUris, captions: result.captions })
                         .returning({ insertedId: Video.id }),
                     tx.update(User)
                         .set({ coin: sql`${User.coin} - 1` })
