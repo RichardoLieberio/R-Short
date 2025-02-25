@@ -14,7 +14,8 @@ import formSchema from '@schema/formSchema';
 
 import { FirebaseConfigurationType, GeminiConfigurationType, ContentType, AudioResponseType, ImageInputConfigurationType } from './types';
 
-import { db, User, Video } from '@database';
+import { db, Log, User, Video, logs } from '@database';
+import { QueryResult } from '@neondatabase/serverless';
 
 const firebaseConfig: FirebaseConfigurationType = {
     apiKey: process.env.FIREBASE_API_KEY!,
@@ -29,14 +30,14 @@ const firebaseConfig: FirebaseConfigurationType = {
 export async function POST(req: Request): Promise<NextResponse> {
     try {
         const { userId }: { userId: string | null } = await auth();
-        if (!userId) throw new Error('You are not authenticated.');
+        if (!userId) return NextResponse.json({ message: 'You are not authenticated' }, { status: 400 });
 
-        const user: { id: number, role: 'user' | 'admin', coin: number } | undefined = await db.select({ id: User.id, role: User.role, coin: User.coin })
+        const user: { id: number, role: 'user' | 'admin', email: string, coin: number } | undefined = await db.select({ id: User.id, role: User.role, email: User.email, coin: User.coin })
             .from(User)
             .where(eq(User.clerk_id, userId))
             .limit(1)
             .then((res) => res[0]);
-        if (!user) throw new Error('Something went wrong.');
+        if (!user) return NextResponse.json({ message: 'Something went wrong' }, { status: 400 });
 
         if (user.role === 'admin' || user.coin > 0) {
             const body: { style: unknown, duration: unknown, storyboard: unknown } = await req.json();
@@ -61,18 +62,29 @@ export async function POST(req: Request): Promise<NextResponse> {
                     return { audioUris: JSON.stringify(audioUris), imageUris: JSON.stringify(imageUris), captions: JSON.stringify(captions) };
                 });
 
-            const [ inserted ]: { insertedId: number }[] = await db.insert(Video).values({ user_id: user.id, audio_uri: result.audioUris, image_uri: result.audioUris, captions: result.captions }).returning({ insertedId: Video.id });
-            await db.update(User).set({ coin: sql`${User.coin} - 1` }).where(and(eq(User.id, user.id), eq(User.role, 'user')));
+            const insertedId: number = await db.transaction(async (tx) => {
+                const [ [ { insertedId } ] ]: [ { insertedId: number }[], QueryResult<never>, QueryResult<never>] = await Promise.all([
+                    tx.insert(Video)
+                        .values({ user_id: user.id, audio_uri: result.audioUris, image_uri: result.audioUris, captions: result.captions })
+                        .returning({ insertedId: Video.id }),
+                    tx.update(User)
+                        .set({ coin: sql`${User.coin} - 1` })
+                        .where(and(eq(User.id, user.id), eq(User.role, 'user'))),
+                    tx.insert(Log).values({ email: user.email, action: 'video_generated', message: logs['video_generated']() }),
+                ]);
 
-            return NextResponse.json({ message: 'Success', id: inserted.insertedId }, { status: 200 });
+                return insertedId;
+            });
+
+            return NextResponse.json({ message: 'Success', id: insertedId }, { status: 200 });
         }
 
-        throw new Error("You don't have any coins.");
+        return NextResponse.json({ message: "You don't have any coins" }, { status: 400 });
     } catch (error) {
         if (error instanceof z.ZodError) return NextResponse.json({ errors: error.flatten().fieldErrors }, { status: 429 });
 
         console.error(error);
-        return NextResponse.json({ message: 'Failed', error }, { status: 400 });
+        return NextResponse.json({ message: (error as Error).message ?? 'Something went wrong' }, { status: 400 });
     }
 }
 
