@@ -10,7 +10,7 @@ export const metadata: object = {
 
 export default function DashboardPage(): JSX.Element {
     return (
-        <div className="mt-12 md:mt-16">
+        <div className="mt-12 md:mt-16 mb-16">
             <main className="mt-12 space-y-8 md:space-y-12">
                 <header className="text-end">
                     <Link href="/generate">
