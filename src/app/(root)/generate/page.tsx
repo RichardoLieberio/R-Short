@@ -14,11 +14,6 @@ import { Form } from '@components/shadcn/form';
 import { Button } from '@components/shadcn/button';
 import { AlertDialog } from '@components/shadcn/alert-dialog';
 
-export const metadata: object = {
-    title: 'R Short - AI Powered Short Video Generator',
-    description: 'Create AI-powered short videos instantly. Enter your concept, and watch our AI transform it into a stunning video within seconds.',
-};
-
 export default function GeneratePage(): JSX.Element {
     const { status, setStatus, form, onSubmit }: useGenerateFormReturn = useGenerateForm();
 
