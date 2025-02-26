@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import { eq, and, sql } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
 import { v4 as uuidv4 } from 'uuid';
-import { FirebaseApp, initializeApp } from 'firebase/app';
-import { FirebaseStorage, StorageReference, getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { StorageReference, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { GoogleGenerativeAI, GenerativeModel, ChatSession, GenerateContentResult } from '@google/generative-ai';
 import textToSpeech, { protos, TextToSpeechClient } from '@google-cloud/text-to-speech';
 import { AssemblyAI, Transcript, TranscriptWord } from 'assemblyai';
@@ -12,20 +11,11 @@ import Replicate from 'replicate';
 import { z } from 'zod';
 import formSchema from '@schema/formSchema';
 
-import { FirebaseConfigurationType, GeminiConfigurationType, ContentType, AudioResponseType, ImageInputConfigurationType } from './types';
+import { storage } from '@lib/firebase';
+import { GeminiConfigurationType, ContentType, AudioResponseType, ImageInputConfigurationType } from './types';
 
-import { db, Log, User, Video, logs } from '@database';
+import { db, User, Video } from '@database';
 import { QueryResult } from '@neondatabase/serverless';
-
-const firebaseConfig: FirebaseConfigurationType = {
-    apiKey: process.env.FIREBASE_API_KEY!,
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN!,
-    projectId: process.env.FIREBASE_PROJECT_ID!,
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET!,
-    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID!,
-    appId: process.env.FIREBASE_APP_ID!,
-    measurementId: process.env.FIREBASE_MEASUREMENT_ID!,
-};
 
 export async function POST(req: Request): Promise<NextResponse> {
     try {
@@ -63,14 +53,13 @@ export async function POST(req: Request): Promise<NextResponse> {
                 });
 
             const insertedId: number = await db.transaction(async (tx) => {
-                const [ [ { insertedId } ] ]: [ { insertedId: number }[], QueryResult<never>, QueryResult<never>] = await Promise.all([
+                const [ [ { insertedId } ] ]: [ { insertedId: number }[], QueryResult<never> ] = await Promise.all([
                     tx.insert(Video)
-                        .values({ user_id: user.id, audio_uri: result.audioUris, image_uri: result.imageUris, captions: result.captions })
+                        .values({ user_id: user.id, folder: uuid, audio_uri: result.audioUris, image_uri: result.imageUris, captions: result.captions })
                         .returning({ insertedId: Video.id }),
                     tx.update(User)
                         .set({ coin: sql`${User.coin} - 1` })
                         .where(and(eq(User.id, user.id), eq(User.role, 'user'))),
-                    tx.insert(Log).values({ email: user.email, action: 'video_generated', message: logs['video_generated']() }),
                 ]);
 
                 return insertedId;
@@ -145,9 +134,6 @@ async function generateTranscript(id: string, contents: ContentType[]): Promise<
 
         if (!audioBuffer) throw new Error('Failed to generate audio');
 
-        const app: FirebaseApp = initializeApp(firebaseConfig);
-        const storage: FirebaseStorage = getStorage(app);
-
         const audioRef: StorageReference = ref(storage, `${id}/Audio/${index + 1}.mp3`);
         if (audioBuffer) await uploadBytes(audioRef, audioBuffer);
 
@@ -178,9 +164,6 @@ async function generateImages(id: string, contents: ContentType[]): Promise<stri
         };
 
         const [ object ]: string[] = await replicate.run('bytedance/sdxl-lightning-4step:5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637', { input }) as string[];
-
-        const app: FirebaseApp = initializeApp(firebaseConfig);
-        const storage: FirebaseStorage = getStorage(app);
 
         const imageRef: StorageReference = ref(storage, `${id}/Image/${index + 1}.png`);
         if (object) {

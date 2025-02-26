@@ -1,15 +1,5 @@
 import { protos } from '@google-cloud/text-to-speech';
 
-export type FirebaseConfigurationType = {
-    apiKey: string;
-    authDomain: string;
-    projectId: string;
-    storageBucket: string;
-    messagingSenderId: string;
-    appId: string;
-    measurementId: string;
-};
-
 export type GeminiConfigurationType = {
     temperature: number;
     topP: number;
