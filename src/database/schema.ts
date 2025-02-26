@@ -3,7 +3,7 @@
 import { pgTable, integer, pgEnum, varchar, json, timestamp } from 'drizzle-orm/pg-core';
 
 export const userRoleEnum = pgEnum('user_role', [ 'user', 'admin' ]);
-export const videoStatusEnum = pgEnum('status', [ 'success', 'pending', 'failed' ]);
+export const videoDurationEnum = pgEnum('duration', [ '15', '30', '60' ]);
 export const transactionTypeEnum = pgEnum('type', [ 'global', 'local' ]);
 
 export const Package = pgTable('packages', {
@@ -25,6 +25,9 @@ export const User = pgTable('users', {
 export const Video = pgTable('videos', {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     user_id: integer().notNull().references(() => User.id),
+    style: varchar({ length: 30 }).notNull(),
+    duration: videoDurationEnum().notNull(),
+    storyboard: varchar({ length: 255 }).notNull(),
     folder: varchar({ length: 50 }).notNull().unique(),
     audio_uri: json(),
     image_uri: json(),

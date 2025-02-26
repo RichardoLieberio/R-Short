@@ -31,10 +31,10 @@ export async function POST(req: Request): Promise<NextResponse> {
 
         if (user.role === 'admin' || user.coin > 0) {
             const body: { style: unknown, duration: unknown, storyboard: unknown } = await req.json();
-            const data: { style: string, duration: string, storyboard: string } = formSchema.parse(body);
+            const { style, duration, storyboard }: { style: string, duration: '15' | '30' | '60', storyboard: string } = formSchema.parse(body);
 
             const uuid: string = uuidv4();
-            const prompt: string = `Write a script and AI image prompt in ${data.style.toLowerCase()} format for each scene to generate a ${data.duration} second video based on the following storyboard:\n\n\"\"\"\n${data.storyboard}\n\"\"\"\n\nThe output should be provided in JSON format with imagePrompt and contentText as fields.`;
+            const prompt: string = `Write a script and AI image prompt in ${style.toLowerCase()} format for each scene to generate a ${duration} second video based on the following storyboard:\n\n\"\"\"\n${storyboard}\n\"\"\"\n\nThe output should be provided in JSON format with imagePrompt and contentText as fields.`;
 
             const contents: ContentType[] = await generateContent(prompt);
             const result: { audioUris: string, imageUris: string, captions: string } = await Promise.all([ generateTranscript(uuid, contents), generateImages(uuid, contents) ])
@@ -55,7 +55,7 @@ export async function POST(req: Request): Promise<NextResponse> {
             const insertedId: number = await db.transaction(async (tx) => {
                 const [ [ { insertedId } ] ]: [ { insertedId: number }[], QueryResult<never> ] = await Promise.all([
                     tx.insert(Video)
-                        .values({ user_id: user.id, folder: uuid, audio_uri: result.audioUris, image_uri: result.imageUris, captions: result.captions })
+                        .values({ user_id: user.id, folder: uuid, style, duration, storyboard, audio_uri: result.audioUris, image_uri: result.imageUris, captions: result.captions })
                         .returning({ insertedId: Video.id }),
                     tx.update(User)
                         .set({ coin: sql`${User.coin} - 1` })
