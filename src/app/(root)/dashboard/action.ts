@@ -4,6 +4,8 @@ import { ClerkMiddlewareAuthObject, auth } from '@clerk/nextjs/server';
 import { VideoType } from './types';
 import { db, User, Video } from '@database';
 import { eq, desc } from 'drizzle-orm';
+import { storage } from '@lib/firebase';
+import { StorageReference, ref, ListResult, list, deleteObject } from 'firebase/storage';
 
 export async function getVideos(count: number, page: number): Promise<VideoType[]> {
     const { userId }: ClerkMiddlewareAuthObject = await auth();
@@ -27,4 +29,22 @@ export async function getVideos(count: number, page: number): Promise<VideoType[
             captions: video.captions as { text: string; start: number; end: number, confidence: number, speaker: unknown }[][],
             created_at: video.created_at,
         }));
+}
+
+export async function deleteVideo(id: number): Promise<void | number> {
+    const [ { deletedId, folder } ]: { deletedId: number, folder: string }[] = await db.delete(Video).where(eq(Video.id, id)).returning({ deletedId: Video.id, folder: Video.folder });
+
+    try {
+        const audioRef: StorageReference = ref(storage, `${folder}/Audio`);
+        const imageRef: StorageReference = ref(storage, `${folder}/Image`);
+        const [ audioList, imageList ]: [ ListResult, ListResult ] = await Promise.all([ list(audioRef), list(imageRef) ]);
+        await Promise.all([
+            ...audioList.items.map((itemRef) => deleteObject(itemRef)),
+            ...imageList.items.map((itemRef) => deleteObject(itemRef)),
+        ]);
+    } catch (error) {
+        console.error(`Failed to delete firebase folder "${folder}":`, error);
+    }
+
+    if (deletedId) return deletedId;
 }

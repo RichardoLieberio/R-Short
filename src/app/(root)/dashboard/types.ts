@@ -1,6 +1,7 @@
 import { Dispatch, SetStateAction } from 'react';
 
 export type useVideoReturn = {
+    total: number;
     videos: VideoType[];
     loading: boolean;
     selectedVideo: VideoType | null;
@@ -10,6 +11,28 @@ export type useVideoReturn = {
     prevPage: () => void;
     nextPage: () => void;
     getPages: () => number[];
+    removeVideo: (id: number) => void;
+};
+
+export type VideoCardProps = {
+    video: VideoType;
+    setSelectedVideo: Dispatch<SetStateAction<VideoType | null>>;
+    imageUri: string;
+    removeVideo: (id: number) => void;
+};
+
+export type VideoPaginationProps = {
+    total: number;
+    page: number;
+    setPage: Dispatch<SetStateAction<number>>;
+    prevPage: () => void;
+    nextPage: () => void;
+    getPages: () => number[];
+};
+
+export type VideoPlayerProps = {
+    selectedVideo: VideoType | null;
+    setSelectedVideo: Dispatch<SetStateAction<VideoType | null>>;
 };
 
 export type VideoType = {

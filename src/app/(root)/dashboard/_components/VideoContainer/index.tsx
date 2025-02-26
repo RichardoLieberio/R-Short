@@ -13,6 +13,6 @@ export default async function VideoContainer(): Promise<JSX.Element> {
         .where(eq(User.clerk_id, userId!));
 
     return (
-        <VideoGallery count={count} />
+        <VideoGallery count={+count} />
     );
 }

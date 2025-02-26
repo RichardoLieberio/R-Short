@@ -3,41 +3,39 @@
 import { JSX } from 'react';
 import { useVideo } from '../../hooks';
 import { useVideoReturn } from '../../types';
+import Link from 'next/link';
+import { Card } from '@/components/shadcn/card';
+import { IoIosAdd } from 'react-icons/io';
 import Skeleton from '@components/Skeleton';
-import { Card } from '@components/shadcn/card';
-import Image from 'next/image';
-import { FaPlay } from 'react-icons/fa';
-import { Button } from '@components/shadcn/button';
-import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
+import VideoCard from '../VideoCard';
+import VideoPagination from '../VideoPagination';
+import VideoPlayer from '../VideoPlayer';
 
 export default function VideoGallery({ count }: { count: number }): JSX.Element {
-    const { videos, loading, selectedVideo, setSelectedVideo, page, setPage, prevPage, nextPage, getPages }: useVideoReturn = useVideo(count);
+    const { total, videos, loading, selectedVideo, setSelectedVideo, page, setPage, prevPage, nextPage, getPages, removeVideo }: useVideoReturn = useVideo(count);
 
     return (
         <>
-            <main className="w-[272px] min-[448px]:w-[416px] min-[592px]:w-[560px] min-[746px]:w-fit mx-auto flex flex-wrap gap-4">
+            <p>Results: {total ? `${(page - 1) * 5 + 1}-${Math.min(total, page * 5)} of ${total}` : 0}</p>
+            <main className="w-[272px] min-[448px]:w-[416px] min-[592px]:w-[560px] min-[746px]:w-[704px] mx-auto flex flex-wrap justify-center gap-4">
+                {
+                    total < 5 && !loading && <Link href="/generate">
+                        <Card className="w-32 h-48 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary">
+                            <IoIosAdd className="text-2xl" />
+                            <span>Create</span>
+                        </Card>
+                    </Link>
+                }
                 {
                     loading
                         ? Array.from({ length: 5 }).map((_, index) =>  <Skeleton key={index} className="w-32 h-48 rounded-lg" />)
-                        : videos.map((video) => (
-                            <Card key={video.id} onClick={() => setSelectedVideo(video)} className="relative w-32 h-48 rounded-lg overflow-hidden group cursor-pointer">
-                                <Image src={video.image_uri[0]} alt="Thumbnail" quality={20} width="128" height="192" unoptimized className="transition-all duration-300 group-hover:brightness-50" />
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <FaPlay className="text-white text-xl" />
-                                </div>
-                            </Card>
-                        ))
+                        : videos.map((video) => <VideoCard key={video.id} video={video} setSelectedVideo={setSelectedVideo} imageUri={video.image_uri[0]} removeVideo={removeVideo} />)
                 }
             </main>
-            <footer className="flex items-center justify-center gap-2">
-                <Button variant="ghost" onClick={prevPage} disabled={page === 1}><IoIosArrowBack /></Button>
-                {
-                    getPages().map((buttonPage) => (
-                        <Button key={buttonPage} onClick={() => setPage(buttonPage)} variant={buttonPage === page ? 'outline' : 'ghost'}>{ buttonPage }</Button>
-                    ))
-                }
-                <Button variant="ghost" onClick={nextPage} disabled={page === Math.ceil(count / 5)}><IoIosArrowForward /></Button>
+            <footer className="flex justify-center">
+                <VideoPagination total={total} page={page} setPage={setPage} prevPage={prevPage} nextPage={nextPage} getPages={getPages} />
             </footer>
+            <VideoPlayer selectedVideo={selectedVideo} setSelectedVideo={setSelectedVideo} />
         </>
     );
 }
