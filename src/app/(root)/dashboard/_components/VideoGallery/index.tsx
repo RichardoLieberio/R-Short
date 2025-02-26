@@ -7,12 +7,13 @@ import Link from 'next/link';
 import { Card } from '@/components/shadcn/card';
 import { IoIosAdd } from 'react-icons/io';
 import Skeleton from '@components/Skeleton';
+import { Dialog, DialogTrigger, DialogContent } from '@components/shadcn/dialog';
 import VideoCard from '../VideoCard';
 import VideoPagination from '../VideoPagination';
-import VideoPlayer from '../VideoPlayer';
+// import VideoPlayer from '../VideoPlayer';
 
 export default function VideoGallery({ count }: { count: number }): JSX.Element {
-    const { total, videos, loading, selectedVideo, setSelectedVideo, page, setPage, prevPage, nextPage, getPages, removeVideo }: useVideoReturn = useVideo(count);
+    const { total, videos, loading, deleting, page, setPage, prevPage, nextPage, getPages, removeVideo }: useVideoReturn = useVideo(count);
 
     return (
         <>
@@ -29,13 +30,24 @@ export default function VideoGallery({ count }: { count: number }): JSX.Element 
                 {
                     loading
                         ? Array.from({ length: 5 }).map((_, index) =>  <Skeleton key={index} className="w-32 h-48 rounded-lg" />)
-                        : videos.map((video) => <VideoCard key={video.id} video={video} setSelectedVideo={setSelectedVideo} imageUri={video.image_uri[0]} removeVideo={removeVideo} />)
+                        : videos.map((video) => (
+                            <Dialog key={video.id}>
+                                <DialogTrigger asChild>
+                                    <button onClick={(e) => deleting.includes(video.id) && e.preventDefault()} className={deleting.includes(video.id) ? 'cursor-default' : ''}>
+                                        <VideoCard video={video} deleting={deleting.includes(video.id)} imageUri={video.image_uri[0]} removeVideo={removeVideo} />
+                                    </button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    Hello
+                                </DialogContent>
+                            </Dialog>
+                        ))
                 }
             </main>
             <footer className="flex justify-center">
                 <VideoPagination total={total} page={page} setPage={setPage} prevPage={prevPage} nextPage={nextPage} getPages={getPages} />
             </footer>
-            <VideoPlayer selectedVideo={selectedVideo} setSelectedVideo={setSelectedVideo} />
+            {/* <VideoPlayer selectedVideo={selectedVideo} setSelectedVideo={setSelectedVideo} /> */}
         </>
     );
 }

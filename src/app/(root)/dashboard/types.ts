@@ -4,8 +4,7 @@ export type useVideoReturn = {
     total: number;
     videos: VideoType[];
     loading: boolean;
-    selectedVideo: VideoType | null;
-    setSelectedVideo: Dispatch<SetStateAction<VideoType | null>>;
+    deleting: number[];
     page: number;
     setPage: Dispatch<SetStateAction<number>>;
     prevPage: () => void;
@@ -16,7 +15,7 @@ export type useVideoReturn = {
 
 export type VideoCardProps = {
     video: VideoType;
-    setSelectedVideo: Dispatch<SetStateAction<VideoType | null>>;
+    deleting: boolean;
     imageUri: string;
     removeVideo: (id: number) => void;
 };

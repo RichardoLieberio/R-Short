@@ -5,7 +5,6 @@ import { getVideos, deleteVideo } from './action';
 export function useVideo(count: number): useVideoReturn {
     const [ total, setTotal ]: [ number, Dispatch<SetStateAction<number>> ] = useState(count);
     const [ videos, setVideos ]: [ VideoType[], Dispatch<SetStateAction<VideoType[]>> ] = useState<VideoType[]>([]);
-    const [ selectedVideo, setSelectedVideo ]: [ VideoType | null, Dispatch<SetStateAction<VideoType | null>> ] = useState<VideoType | null>(null);
     const [ page, setPage ]: [ number, Dispatch<SetStateAction<number>> ] = useState(1);
     const [ loading, setLoading ]: [ boolean, Dispatch<SetStateAction<boolean>> ] = useState(true);
     const [ deleting, setDeleting ]: [ number[], Dispatch<SetStateAction<number[]>> ] = useState<number[]>([]);
@@ -50,12 +49,11 @@ export function useVideo(count: number): useVideoReturn {
             if (deletedId) {
                 setVideos((videos) => videos.filter((video) => video.id !== deletedId));
                 setTotal((total) => total - 1);
-                if (selectedVideo?.id === deletedId) setSelectedVideo(null);
             }
 
             setDeleting((deleting) => deleting.filter((deletingId) => deletingId !== id));
         }
     }
 
-    return { total, videos, loading, selectedVideo, setSelectedVideo, page, setPage, prevPage, nextPage, getPages, removeVideo };
+    return { total, videos, loading, deleting, page, setPage, prevPage, nextPage, getPages, removeVideo };
 }
