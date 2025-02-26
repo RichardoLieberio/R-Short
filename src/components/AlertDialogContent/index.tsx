@@ -5,7 +5,7 @@ export default function AlertDialogContent({ title, description, footer }: { tit
     return (
         <ShadcnAlertDialogContent>
             <AlertDialogHeader>
-                <AlertDialogTitle className="flex items-center gap-2">{ title }</AlertDialogTitle>
+                <AlertDialogTitle>{ title }</AlertDialogTitle>
                 <AlertDialogDescription>{ description }</AlertDialogDescription>
             </AlertDialogHeader>
             {
