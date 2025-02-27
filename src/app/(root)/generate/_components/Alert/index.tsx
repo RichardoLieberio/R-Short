@@ -20,7 +20,7 @@ export default function Alert({ status, setStatus }: { status: string, setStatus
             <AlertDialogContent
                 title={ <span className="flex items-center gap-2"><MdOutlineCheckCircleOutline /> Success</span> }
                 description={ <span>Your content has been generated</span> }
-                footer={ <Link href="/dashboard"><Button>Go to dashboard</Button></Link> }
+                footer={ <Link href="/video"><Button>Go to video</Button></Link> }
             />
         );
     } else {

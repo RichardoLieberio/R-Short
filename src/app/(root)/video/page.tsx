@@ -8,7 +8,7 @@ export const metadata: object = {
     description: 'View and manage your AI-generated short videos. Access all your creations in one place.',
 };
 
-export default function DashboardPage(): JSX.Element {
+export default function VideoPage(): JSX.Element {
     return (
         <div className="mt-12 md:mt-16 mb-16">
             <main className="mt-12 space-y-8 md:space-y-12">

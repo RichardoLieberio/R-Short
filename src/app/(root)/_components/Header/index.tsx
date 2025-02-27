@@ -23,7 +23,7 @@ export default async function Header(): Promise<JSX.Element> {
             <SignedIn>
                 <div className="flex-1 flex items-center justify-between gap-4">
                     <div className="flex-1 flex items-center gap-4">
-                        <Link href="/dashboard" className="hover:underline">Dashboard</Link>
+                        <Link href="/video" className="hover:underline">Video</Link>
                         {
                             isAdmin
                                 ? <Link href="/admin" className="hover:underline">Admin</Link>

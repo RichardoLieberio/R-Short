@@ -15,7 +15,7 @@ export async function getVideos(count: number, page: number): Promise<VideoType[
     const offset: number = (currentPage - 1) * 5;
 
     return (await db
-        .select({ id: Video.id, audio_uri: Video.audio_uri, image_uri: Video.image_uri, captions: Video.captions, created_at: Video.created_at })
+        .select({ id: Video.id, style: Video.style, duration: Video.duration, storyboard: Video.storyboard, audio_uri: Video.audio_uri, image_uri: Video.image_uri, captions: Video.captions, created_at: Video.created_at })
         .from(Video)
         .innerJoin(User, eq(User.id, Video.user_id))
         .where(eq(User.clerk_id, userId!))
@@ -24,6 +24,9 @@ export async function getVideos(count: number, page: number): Promise<VideoType[
         .offset(offset))
         .map((video) => ({
             id: video.id,
+            style: video.style,
+            duration: video.duration,
+            storyboard: video.storyboard,
             audio_uri: video.audio_uri as string[],
             image_uri: video.image_uri as string[],
             captions: video.captions as { text: string; start: number; end: number, confidence: number, speaker: unknown }[][],
