@@ -1,37 +1,28 @@
 'use server';
 
 import { ClerkMiddlewareAuthObject, auth } from '@clerk/nextjs/server';
-import { VideoType } from './types';
+import { VideoType, UnknownVideoType, Caption } from '../../types';
 import { db, User, Video } from '@database';
-import { eq, desc } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { storage } from '@lib/firebase';
 import { StorageReference, ref, ListResult, list, deleteObject } from 'firebase/storage';
 
-export async function getVideos(count: number, page: number): Promise<VideoType[]> {
+export async function getVideo(id: number): Promise<VideoType | undefined> {
     const { userId }: ClerkMiddlewareAuthObject = await auth();
 
-    const maxPage: number = Math.max(1, Math.ceil(count ?? 0 / 5));
-    const currentPage: number = Math.min(Math.max(1, page), maxPage);
-    const offset: number = (currentPage - 1) * 5;
-
-    return (await db
-        .select({ id: Video.id, style: Video.style, duration: Video.duration, storyboard: Video.storyboard, audio_uri: Video.audio_uri, image_uri: Video.image_uri, captions: Video.captions, created_at: Video.created_at })
+    return await db.select({ id: Video.id, style: Video.style, duration: Video.duration, storyboard: Video.storyboard, audioUris: Video.audio_uri, imageUris: Video.image_uri, captions: Video.captions, createdAt: Video.created_at })
         .from(Video)
         .innerJoin(User, eq(User.id, Video.user_id))
-        .where(eq(User.clerk_id, userId!))
-        .orderBy(desc(Video.created_at))
-        .limit(5)
-        .offset(offset))
-        .map((video) => ({
-            id: video.id,
-            style: video.style,
-            duration: video.duration,
-            storyboard: video.storyboard,
-            audio_uri: video.audio_uri as string[],
-            image_uri: video.image_uri as string[],
-            captions: video.captions as { text: string; start: number; end: number, confidence: number, speaker: unknown }[][],
-            created_at: video.created_at,
-        }));
+        .where(and(eq(Video.id, id), eq(User.clerk_id, userId!)))
+        .then(([ result ]: UnknownVideoType[]) => {
+            if (!result) return undefined;
+            return {
+                ...result,
+                audioUris: result.audioUris as string[],
+                imageUris: result.imageUris as string[],
+                captions: result.captions as Caption[][],
+            };
+        });
 }
 
 export async function deleteVideo(id: number): Promise<void | number> {

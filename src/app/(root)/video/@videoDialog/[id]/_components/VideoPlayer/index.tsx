@@ -1,14 +1,14 @@
-'use effect';
+'use client';
 
-import { usePlayerReturn, VideoType } from '../../types';
+import { VideoType } from '../../../../types';
 import { JSX } from 'react';
 import { usePlayer } from '../../hooks';
 import { Player } from '@remotion/player';
 import Video from '../Video';
 import BlankScene from '../BlankScene';
 
-export default function VideoPlayer({ video }: { video: VideoType }): JSX.Element {
-    const { loaded, height }: usePlayerReturn = usePlayer(video);
+export default function VideoPlayer({ width, height, video }: { width: number, height: number, video: VideoType }): JSX.Element {
+    const { loading }: { loading: boolean } = usePlayer(video);
 
     const [ frames, durations ]: [ number, number[] ] = video.captions.reduce((obj: [ number, number[] ], captions) => {
         const frame: number = Math.ceil((captions.at(-1)!.end / 1000) * 30 + 15);
@@ -17,13 +17,13 @@ export default function VideoPlayer({ video }: { video: VideoType }): JSX.Elemen
 
     return (
         <Player
-            component={loaded ? Video : BlankScene}
+            component={loading ? Video : BlankScene}
             durationInFrames={frames}
             fps={30}
-            compositionWidth={Math.round(height * 2 / 3)}
-            compositionHeight={height}
+            compositionWidth={Math.round(width)}
+            compositionHeight={Math.round(height)}
             inputProps={{ video, durations }}
-            controls={loaded}
+            controls={loading}
             acknowledgeRemotionLicense
         />
     );

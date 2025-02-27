@@ -1,20 +1,42 @@
-'use client';
-
 import { JSX } from 'react';
-import { VideoPaginationProps } from '../../types';
+import Link from 'next/link';
 import { Button } from '@components/shadcn/button';
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
 
-export default function VideoPagination({ total, page, setPage, prevPage, nextPage, getPages }: VideoPaginationProps): JSX.Element {
+export default function VideoPagination({ page, total }: { page: number, total: number }): JSX.Element {
+    const totalPages: number = Math.ceil(total / 5);
+    let pages: number[];
+
+    if (totalPages <= 3) pages = Array.from({ length: totalPages }).map((_, index) => index + 1);
+    else if (page === 1) pages = [ 1, 2, 3 ];
+    else if (page === totalPages) pages = [ page - 2, page - 1, page ];
+    else pages = [ page - 1, page, page + 1 ];
+
     return (
         <div className="flex items-center justify-center gap-2">
-            <Button variant="ghost" onClick={prevPage} disabled={page === 1}><IoIosArrowBack /></Button>
             {
-                getPages().map((buttonPage) => (
-                    <Button key={buttonPage} onClick={() => setPage(buttonPage)} variant={buttonPage === page ? 'outline' : 'ghost'}>{ buttonPage }</Button>
+                page === 1
+                    ? <Button variant="ghost" disabled><IoIosArrowBack /></Button>
+                    : <Link href={`?page=${page - 1}`}>
+                        <Button variant="ghost"><IoIosArrowBack /></Button>
+                    </Link>
+            }
+            {
+                pages.map((buttonPage) => (
+                    page === buttonPage
+                        ? <Button key={buttonPage} variant="outline">{ buttonPage }</Button>
+                        : <Link key={buttonPage} href={`?page=${buttonPage}`}>
+                            <Button variant="ghost">{ buttonPage }</Button>
+                        </Link>
                 ))
             }
-            <Button variant="ghost" onClick={nextPage} disabled={page === Math.ceil(total / 5) || !total}><IoIosArrowForward /></Button>
+            {
+                page === totalPages
+                    ? <Button variant="ghost" disabled><IoIosArrowForward /></Button>
+                    : <Link href={`?page=${page + 1}`}>
+                        <Button variant="ghost"><IoIosArrowForward /></Button>
+                    </Link>
+            }
         </div>
     );
 }

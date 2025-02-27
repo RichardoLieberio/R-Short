@@ -1,6 +1,6 @@
 'use client';
 
-import { VideoType } from '../../types';
+import { VideoType } from '../../../../types';
 import { JSX } from 'react';
 import { useCurrentFrame, Sequence, interpolate } from 'remotion';
 import Scene from '../Scene';
@@ -12,7 +12,7 @@ export default function Video({ video, durations }: { video: VideoType, duration
     return (
         <>
             {
-                video.image_uri.map((imageUri, index) => {
+                video.imageUris.map((imageUri, index) => {
                     const from: number = accumulatedFrames;
                     const outputRange: number[] = index % 2 ? [ 1.09, 1 ] : [ 1, 1.09 ];
                     const scale: number = interpolate(frame, [ from, from + durations[index] ], outputRange, { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
@@ -20,7 +20,7 @@ export default function Video({ video, durations }: { video: VideoType, duration
 
                     return (
                         <Sequence key={index} from={from} durationInFrames={durations[index]} premountFor={150}>
-                            <Scene scale={scale} imageUri={imageUri} audioUri={video.audio_uri[index]} captions={video.captions[index]} />
+                            <Scene scale={scale} imageUri={imageUri} audioUri={video.audioUris[index]} captions={video.captions[index]} />
                         </Sequence>
                     );
                 })
