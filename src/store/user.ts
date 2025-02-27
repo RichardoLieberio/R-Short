@@ -2,8 +2,9 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-const initialState: { coin: number | null } = {
+const initialState: { coin: number | null, deleting: number[] } = {
     coin: null,
+    deleting: [],
 };
 
 export const userSlice = createSlice({
@@ -16,8 +17,14 @@ export const userSlice = createSlice({
         reduceCoin: (state) => {
             state.coin! -= 1;
         },
+        addDelete: (state, action: PayloadAction<number>) => {
+            state.deleting = [ ...state.deleting, action.payload ];
+        },
+        removeDelete: (state, action: PayloadAction<number>) => {
+            state.deleting = state.deleting.filter((id) => id !== action.payload);
+        },
     },
 });
 
-export const { setCoin, reduceCoin } = userSlice.actions;
+export const { setCoin, reduceCoin, addDelete, removeDelete } = userSlice.actions;
 export default userSlice.reducer;
