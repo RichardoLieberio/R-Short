@@ -9,6 +9,7 @@ import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
 import ClerkAuth from './_components/ClerkAuth';
 import StoreProvider from './_components/StoreProvider';
+import SocketProvider from './_components/SocketProvider';
 
 const dmSans: NextFont = DM_Sans({
     subsets: [ 'latin' ],
@@ -20,11 +21,13 @@ export default function RootLayout({ children }: { children: ReactNode }): JSX.E
         <ClerkProvider appearance={{ baseTheme: dark }}>
             <ClerkAuth>
                 <StoreProvider>
-                    <html lang="en">
-                        <body className={`${dmSans.className} w-full min-w-80 h-dvh relative text-sm md:text-base text-foreground bg-background overflow-x-hidden`}>
-                            { children }
-                        </body>
-                    </html>
+                    <SocketProvider>
+                        <html lang="en">
+                            <body className={`${dmSans.className} w-full min-w-80 h-dvh relative text-sm md:text-base text-foreground bg-background overflow-x-hidden`}>
+                                { children }
+                            </body>
+                        </html>
+                    </SocketProvider>
                 </StoreProvider>
             </ClerkAuth>
         </ClerkProvider>
