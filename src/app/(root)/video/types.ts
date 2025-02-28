@@ -2,6 +2,18 @@ export type VideoPageProps = {
     searchParams: Promise<{ page: string | string[] | undefined }>
 };
 
+export type VideoPlayerProps = {
+    videoNotFound: boolean;
+    video: VideoType | null;
+};
+
+export type SceneProps = {
+    scale: number;
+    imageUri: string;
+    audioUri: string;
+    captions: Caption[],
+};
+
 export type VideoType = {
     id: number;
     style: string;

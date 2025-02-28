@@ -1,4 +1,4 @@
-import { VideoType } from '../../../../types';
+import { VideoType } from '../../types';
 import { JSX } from 'react';
 import Skeleton from '@components/Skeleton';
 

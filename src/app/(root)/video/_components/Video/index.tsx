@@ -1,6 +1,6 @@
 'use client';
 
-import { VideoType } from '../../../../types';
+import { VideoType } from '../../types';
 import { JSX } from 'react';
 import { useCurrentFrame, Sequence, interpolate } from 'remotion';
 import Scene from '../Scene';

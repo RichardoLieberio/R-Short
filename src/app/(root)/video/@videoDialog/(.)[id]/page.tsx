@@ -9,9 +9,9 @@ import { useVideoReturn } from './types';
 import { useVideo } from './hooks';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@components/shadcn/dialog';
 import { Button } from '@components/shadcn/button';
-import VideoPlayer from './_components/VideoPlayer';
+import VideoPlayer from '../../_components/VideoPlayer';
 import { Popover, PopoverContent, PopoverTrigger } from '@components/shadcn/popover';
-import VideoDetail from './_components/VideoDetail';
+import VideoDetail from '../../_components/VideoDetail';
 import { IoMdInformationCircleOutline } from 'react-icons/io';
 import { FaTrashAlt, FaDownload } from 'react-icons/fa';
 import PulseLoader from 'react-spinners/PulseLoader';
@@ -24,7 +24,7 @@ export default function VideoDialog(): JSX.Element {
     if (!isValidInteger) notFound();
 
     const router: AppRouterInstance = useRouter();
-    const { video, videoNotFound, height, removeVideo, deleting }: useVideoReturn = useVideo(+id);
+    const { video, videoNotFound, removeVideo, deleting }: useVideoReturn = useVideo(+id);
 
     function closeDialog(open: boolean): void {
         if (!open) {
@@ -41,7 +41,7 @@ export default function VideoDialog(): JSX.Element {
                     <DialogDescription hidden>Video dialog</DialogDescription>
                 </DialogHeader>
                 <section className="relative">
-                    <VideoPlayer height={height} videoNotFound={videoNotFound} video={video} />
+                    <VideoPlayer videoNotFound={videoNotFound} video={video} />
                     {
                         !largeScreen && <Popover>
                             <PopoverTrigger asChild>
