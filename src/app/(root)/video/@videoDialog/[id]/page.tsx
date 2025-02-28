@@ -2,7 +2,7 @@
 
 import { JSX } from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useParams, ReadonlyURLSearchParams, useSearchParams, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { notFound } from 'next/navigation';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { useVideoReturn } from './types';
@@ -22,16 +22,6 @@ export default function VideoDialog(): JSX.Element {
 
     const isValidInteger: boolean = /^[1-9]\d*$/.test(id);
     if (!isValidInteger) notFound();
-
-    /*
-        Not working block
-    */
-    const searchParams: ReadonlyURLSearchParams = useSearchParams();
-    const page: string = searchParams.get('page') ?? '1';
-    console.log(page);
-    /*
-        Not working block
-    */
 
     const router: AppRouterInstance = useRouter();
     const { video, videoNotFound, height, removeVideo, deleting }: useVideoReturn = useVideo(+id);

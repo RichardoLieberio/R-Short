@@ -13,7 +13,7 @@ import VideoPagination from './_components/VideoPagination';
 
 export default async function VideoPage({ searchParams }: VideoPageProps): Promise<JSX.Element> {
     const { page = '1' }: { page: string | string[] } = (await searchParams as { page: string | string[] });
-    const pageValue: string = Array.isArray(page) ? page.at(-1)! : page;
+    const pageValue: string = Array.isArray(page) ? page.at(0)! : page;
 
     const isValidInteger: boolean = /^[1-9]\d*$/.test(pageValue);
     if (!isValidInteger) notFound();
@@ -37,7 +37,6 @@ export default async function VideoPage({ searchParams }: VideoPageProps): Promi
             .then(([ result ]: { total: number }[]) => result.total ?? 0),
     ]);
 
-
     if (!videos.length && +pageValue !== 1) notFound();
 
     const startIndex: number = offset + 1;
@@ -47,7 +46,7 @@ export default async function VideoPage({ searchParams }: VideoPageProps): Promi
         <div className="mt-12 md:mt-16 mb-16">
             <main className="mt-12 space-y-8 md:space-y-12">
                 <header className="flex items-center justify-between">
-                    <span>Result: { startIndex } - { endIndex } of { total }</span>
+                    <span>Result: { videos.length ? startIndex : '0' } - { endIndex } of { total }</span>
                     <Button>Generate video</Button>
                 </header>
                 <main className="w-[272px] min-[448px]:w-[416px] min-[592px]:w-[560px] min-[746px]:w-[704px] mx-auto flex flex-wrap justify-center gap-4">
@@ -59,7 +58,7 @@ export default async function VideoPage({ searchParams }: VideoPageProps): Promi
                             </Card>
                         </Link>
                     }
-                    { videos.map((video) => <VideoCard key={video.id} id={video.id} imageUri={video.imageUri} />) }
+                    { videos.map((video) => <VideoCard key={video.id} id={video.id} imageUri={video.imageUri} lastVideo={videos.length === 1 && +pageValue !== 1} />) }
                 </main>
                 <footer className="flex justify-center">
                     <VideoPagination page={+pageValue} total={total} />

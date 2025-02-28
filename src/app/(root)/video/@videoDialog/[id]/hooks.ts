@@ -47,11 +47,22 @@ export function useVideo(id: number): useVideoReturn {
     async function removeVideo(): Promise<void> {
         if (!deleting.includes(id)) {
             dispatch(addDelete(id));
+
             const deletedId: number | void = await deleteVideo(id);
             if (deletedId) {
+                const params: URLSearchParams = new URL(document.location.toString()).searchParams;
+                const last: string | null = params.get('last');
+
                 router.back();
-                setTimeout(() => window.location.reload(), 1);
+                setTimeout(() => {
+                    const params: URLSearchParams = new URL(document.location.toString()).searchParams;
+                    const page: string | null = params.get('page');
+
+                    if (page && page !== '1' && last) history.replaceState(null, '', `?page=${+page - 1}`);
+                    location.reload();
+                }, 1);
             }
+
             dispatch(removeDelete(id));
         }
     }
