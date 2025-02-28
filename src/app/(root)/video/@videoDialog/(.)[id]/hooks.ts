@@ -4,7 +4,7 @@ import { VideoType } from '../../types';
 import { useRouter } from 'next/navigation';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { useAppDispatch, AppDispatch, useAppSelector } from '@store';
-import { deleteVideo, getVideo } from './action';
+import { deleteVideo, getVideo } from '../../action';
 import { addDelete, removeDelete } from '@/store/user';
 
 export function useVideo(id: number): useVideoReturn {

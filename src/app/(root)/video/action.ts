@@ -1,7 +1,7 @@
 'use server';
 
 import { ClerkMiddlewareAuthObject, auth } from '@clerk/nextjs/server';
-import { VideoType, UnknownVideoType, Caption } from '../../types';
+import { VideoType, UnknownVideoType, Caption } from './types';
 import { db, User, Video } from '@database';
 import { and, eq } from 'drizzle-orm';
 import { storage } from '@lib/firebase';
