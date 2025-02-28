@@ -6,7 +6,7 @@ import { AssemblyAI } from 'assemblyai';
 import Replicate from 'replicate';
 import { initializeApp } from 'firebase/app';
 import { getStorage } from 'firebase/storage';
-import { db, User, Video } from './database/index.js';
+import { db, User, Video } from '../database/index.js';
 import { eq, and, sql } from 'drizzle-orm';
 
 const firebaseConfig = {

@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { generate } from './controllers/generate';
+import { generate } from './controllers/generate.js';
 
 const app = express();
 const server = createServer(app);
