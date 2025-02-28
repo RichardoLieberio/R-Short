@@ -7,7 +7,15 @@ export function getSocket(userId: string | null | undefined): Socket | null {
         socket = io(process.env.NEXT_PUBLIC_SERVICE_URI!, { transports: [ 'websocket' ], auth: { userId } });
 
         socket.on('connect', () => {
-            console.log('Connected to socket service:', socket?.id);
+            console.log('Connected to socket service:', socket!.id);
+        });
+
+        socket.on('generate:success', ({ videoId }: { videoId: number }) => {
+            console.log('Generate successful:', videoId);
+        });
+
+        socket.on('generate:failed', ({ videoId }: { videoId: number }) => {
+            console.log('Generate failed:', videoId);
         });
 
         socket.on('disconnect', () => {
