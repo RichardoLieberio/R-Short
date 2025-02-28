@@ -1,0 +1,32 @@
+{
+  "name": "r-short-service",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@google-cloud/text-to-speech": "^5.8.1",
+    "@google/generative-ai": "^0.22.0",
+    "@neondatabase/serverless": "^0.10.4",
+    "assemblyai": "^4.9.0",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.40.0",
+    "express": "^4.21.2",
+    "firebase": "^11.3.1",
+    "pg": "^8.13.3",
+    "remotion": "^4.0.265",
+    "replicate": "^1.0.1",
+    "socket.io": "^4.8.1",
+    "uuid": "^11.1.0",
+    "ws": "^8.18.1"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.30.5"
+  }
+}
