@@ -9,7 +9,9 @@ const server = createServer(app);
 const io = new Server(server, {
     cors: {
         origin: process.env.CLIENT_URI,
-        methods: ['POST'],
+        methods: [ 'GET', 'POST' ],
+        allowedHeaders: [ 'Authorization' ],
+        credentials: true
     },
 });
 
