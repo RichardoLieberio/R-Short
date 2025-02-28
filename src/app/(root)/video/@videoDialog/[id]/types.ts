@@ -9,6 +9,12 @@ export type useVideoReturn = {
     deleting: boolean;
 };
 
+export type VideoPlayerProps = {
+    height: number;
+    videoNotFound: boolean;
+    video: VideoType | null;
+};
+
 export type SceneProps = {
     scale: number;
     imageUri: string;

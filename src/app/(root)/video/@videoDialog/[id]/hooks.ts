@@ -59,20 +59,20 @@ export function useVideo(id: number): useVideoReturn {
     return { video, videoNotFound, height, removeVideo, deleting: deleting.includes(id) };
 }
 
-export function usePlayer(video: VideoType): { loading: boolean } {
+export function usePlayer(video: VideoType | null): { loading: boolean } {
     const [ loading, setLoading ]: [ boolean, Dispatch<SetStateAction<boolean>> ] = useState(false);
 
     useEffect(() => {
         async function preloadVideo(): Promise<void> {
             try {
-                const images: Promise<unknown>[] = video.imageUris.map((src) => new Promise((resolve, reject) => {
+                const images: Promise<unknown>[] = video!.imageUris.map((src) => new Promise((resolve, reject) => {
                     const image: HTMLImageElement = new Image();
                     image.src = src;
                     image.onload = (): void => resolve(undefined);
                     image.onerror = (): void => reject();
                 }));
 
-                const audios: Promise<unknown>[] = video.audioUris.map((src) => new Promise((resolve, reject) => {
+                const audios: Promise<unknown>[] = video!.audioUris.map((src) => new Promise((resolve, reject) => {
                     const audio: HTMLAudioElement = new Audio();
                     audio.src = src;
                     audio.oncanplaythrough = (): void => resolve(undefined);
@@ -86,8 +86,10 @@ export function usePlayer(video: VideoType): { loading: boolean } {
             }
         }
 
-        setLoading(false);
-        preloadVideo();
+        if (video) {
+            setLoading(false);
+            preloadVideo();
+        }
     }, [ video ]);
 
     return { loading };

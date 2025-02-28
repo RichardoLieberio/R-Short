@@ -1,6 +1,7 @@
 'use client';
 
 import { JSX } from 'react';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useParams, ReadonlyURLSearchParams, useSearchParams, useRouter } from 'next/navigation';
 import { notFound } from 'next/navigation';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
@@ -9,11 +10,14 @@ import { useVideo } from './hooks';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@components/shadcn/dialog';
 import { Button } from '@components/shadcn/button';
 import VideoPlayer from './_components/VideoPlayer';
-import Skeleton from '@components/Skeleton';
+import { Popover, PopoverContent, PopoverTrigger } from '@components/shadcn/popover';
+import VideoDetail from './_components/VideoDetail';
+import { IoMdInformationCircleOutline } from 'react-icons/io';
 import { FaTrashAlt, FaDownload } from 'react-icons/fa';
 import PulseLoader from 'react-spinners/PulseLoader';
 
 export default function VideoDialog(): JSX.Element {
+    const largeScreen: boolean = useMediaQuery('(min-width: 1024px)');
     const { id }: { id: string } = useParams();
 
     const isValidInteger: boolean = /^[1-9]\d*$/.test(id);
@@ -39,9 +43,6 @@ export default function VideoDialog(): JSX.Element {
         }
     }
 
-    const widthPx: string = `${(height * 2 / 3).toString()}px`;
-    const heightPx: string = `${height.toString()}px`;
-
     return (
         <Dialog open onOpenChange={closeDialog}>
             <DialogContent className="w-fit lg:max-w-none p-0 bg-transparent border-none lg:flex lg:gap-16">
@@ -49,17 +50,21 @@ export default function VideoDialog(): JSX.Element {
                     <DialogTitle hidden>Video Dialog</DialogTitle>
                     <DialogDescription hidden>Video dialog</DialogDescription>
                 </DialogHeader>
-                {
-                    videoNotFound
-                        ? <div style={{ width: widthPx, height: heightPx }} className="bg-black flex items-center justify-center">
-                            Video not found
-                        </div>
-                        : (
-                            video
-                                ? <VideoPlayer width={height * 2 / 3} height={height} video={video} />
-                                : <Skeleton width={widthPx} height={heightPx} />
-                        )
-                }
+                <section className="relative">
+                    <VideoPlayer height={height} videoNotFound={videoNotFound} video={video} />
+                    {
+                        !largeScreen && <Popover>
+                            <PopoverTrigger asChild>
+                                <div className="px-1 py-2 lg:hidden absolute top-0 right-0 cursor-pointer">
+                                    <IoMdInformationCircleOutline className="text-xl" />
+                                </div>
+                            </PopoverTrigger>
+                            <PopoverContent className="max-w-80">
+                                <VideoDetail videoNotFound={videoNotFound} video={video} />
+                            </PopoverContent>
+                        </Popover>
+                    }
+                </section>
                 <DialogFooter className="lg:flex-col lg:justify-start lg:gap-12">
                     <div className="flex flex-col-reverse sm:flex-row gap-2">
                         <Button variant="destructive" onClick={() => removeVideo()} disabled={deleting || !video || videoNotFound}>
@@ -70,20 +75,11 @@ export default function VideoDialog(): JSX.Element {
                             <FaDownload /> Download
                         </Button>
                     </div>
-                    <div className="w-96 hidden lg:flex flex-col gap-8 ">
-                        <div>
-                            <small className="text-xs">Style :</small>
-                            { videoNotFound ? <p>-</p> : (video ? <p>{ video.style }</p> : <Skeleton className="w-full h-5" />) }
+                    {
+                        largeScreen && <div className="w-96">
+                            <VideoDetail videoNotFound={videoNotFound} video={video} />
                         </div>
-                        <div>
-                            <small className="text-xs">Duration :</small>
-                            { videoNotFound ? <p>-</p> : (video ? <p>{ video.duration } seconds</p> : <Skeleton className="w-full h-5" />) }
-                        </div>
-                        <div>
-                            <small className="text-xs">Storyboard :</small>
-                            { videoNotFound ? <p>-</p> : (video ? <p>{ video.storyboard }</p> : <Skeleton className="w-full h-20" />) }
-                        </div>
-                    </div>
+                    }
                 </DialogFooter>
             </DialogContent>
         </Dialog>
