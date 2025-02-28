@@ -40,7 +40,7 @@ export async function generate({ userId, insertedId, style, duration, storyboard
                 return { audio_uri: JSON.stringify(audioUris), image_uri: JSON.stringify(imageUris), captions: JSON.stringify(captions) };
             });
 
-        await db.update(Video).set({ ...result, status: 'created' }).where(eq(Video.id, insertedId));
+        await db.update(Video).set({ folder: uuid, ...result, status: 'created' }).where(eq(Video.id, insertedId));
         return true;
     } catch (error) {
         console.error(error);
@@ -107,7 +107,7 @@ async function generateTranscript(id, contents) {
             audioConfig: { audioEncoding: 'MP3' },
         };
 
-        const [ audioResponse ] = textToSpeechClient.synthesizeSpeech(request);
+        const [ audioResponse ] = await textToSpeechClient.synthesizeSpeech(request);
         const audioBuffer = audioResponse.audioContent instanceof Uint8Array ? audioResponse.audioContent : null;
 
         if (!audioBuffer) throw new Error('Failed to generate audio');
