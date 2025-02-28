@@ -8,8 +8,8 @@ import { Player } from '@remotion/player';
 import Video from '../Video';
 import BlankScene from '../BlankScene';
 
-export default function VideoPlayer({ videoNotFound, video }: VideoPlayerProps): JSX.Element {
-    const { height, loading }: { height: number, loading: boolean } = usePlayer(video);
+export default function VideoPlayer({ videoNotFound, video, small }: VideoPlayerProps): JSX.Element {
+    const { height, loading }: { height: number, loading: boolean } = usePlayer(video, small);
 
     const widthPx: string = `${(height * 2 / 3).toString()}px`;
     const heightPx: string = `${height.toString()}px`;

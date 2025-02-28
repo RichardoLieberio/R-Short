@@ -5,6 +5,7 @@ export type VideoPageProps = {
 export type VideoPlayerProps = {
     videoNotFound: boolean;
     video: VideoType | null;
+    small: boolean;
 };
 
 export type SceneProps = {

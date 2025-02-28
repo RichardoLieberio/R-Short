@@ -41,7 +41,7 @@ export default function VideoDialog(): JSX.Element {
                     <DialogDescription hidden>Video dialog</DialogDescription>
                 </DialogHeader>
                 <section className="relative">
-                    <VideoPlayer videoNotFound={videoNotFound} video={video} />
+                    <VideoPlayer videoNotFound={videoNotFound} video={video} small={false} />
                     {
                         !largeScreen && <Popover>
                             <PopoverTrigger asChild>
