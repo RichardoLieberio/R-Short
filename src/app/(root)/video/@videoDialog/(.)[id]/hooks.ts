@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { useAppDispatch, AppDispatch, useAppSelector } from '@store';
 import { deleteVideo, getVideo } from '../../action';
-import { addDelete, removeDelete } from '@store/user';
+import { addProcess, removeProcess } from '@store/user';
 
 export function useVideo(id: number): useVideoReturn {
     const [ video, setVideo ]: [ VideoType | null, Dispatch<SetStateAction<VideoType | null>> ] = useState<VideoType | null>(null);
     const [ videoNotFound, setVideoNotFound ]: [ boolean, Dispatch<SetStateAction<boolean>> ] = useState(false);
 
     const router: AppRouterInstance = useRouter();
-    const deleting: number[] = useAppSelector((state) => state.user.deleting);
+    const processing: number[] = useAppSelector((state) => state.user.processing);
     const dispatch: AppDispatch = useAppDispatch();
 
     useEffect(() => {
@@ -26,8 +26,8 @@ export function useVideo(id: number): useVideoReturn {
     }, [ id ]);
 
     async function removeVideo(): Promise<void> {
-        if (!deleting.includes(id)) {
-            dispatch(addDelete(id));
+        if (!processing.includes(id)) {
+            dispatch(addProcess(id));
 
             const deletedId: number | void = await deleteVideo(id);
             if (deletedId) {
@@ -44,9 +44,9 @@ export function useVideo(id: number): useVideoReturn {
                 }, 1);
             }
 
-            dispatch(removeDelete(id));
+            dispatch(removeProcess(id));
         }
     }
 
-    return { video, videoNotFound, removeVideo, deleting: deleting.includes(id) };
+    return { video, videoNotFound, removeVideo, processing: processing.includes(id) };
 }

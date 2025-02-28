@@ -14,7 +14,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@components/shadcn/popo
 import VideoDetail from '../../_components/VideoDetail';
 import { IoMdInformationCircleOutline } from 'react-icons/io';
 import { FaTrashAlt, FaDownload } from 'react-icons/fa';
-import PulseLoader from 'react-spinners/PulseLoader';
 
 export default function VideoDialog(): JSX.Element {
     const largeScreen: boolean = useMediaQuery('(min-width: 1024px)');
@@ -24,7 +23,7 @@ export default function VideoDialog(): JSX.Element {
     if (!isValidInteger) notFound();
 
     const router: AppRouterInstance = useRouter();
-    const { video, videoNotFound, removeVideo, deleting }: useVideoReturn = useVideo(+id);
+    const { video, videoNotFound, removeVideo, processing }: useVideoReturn = useVideo(+id);
 
     function closeDialog(open: boolean): void {
         if (!open) {
@@ -57,11 +56,10 @@ export default function VideoDialog(): JSX.Element {
                 </section>
                 <DialogFooter className="lg:flex-col lg:justify-start lg:gap-12">
                     <div className="flex flex-col-reverse sm:flex-row gap-2">
-                        <Button variant="destructive" onClick={() => removeVideo()} disabled={deleting || !video || videoNotFound}>
-                            <span className={`${deleting && 'text-transparent'} flex items-center gap-2`}><FaTrashAlt /> Delete</span>
-                            { deleting && <div className="absolute"><PulseLoader color="#fafafa" size={4} /></div> }
+                        <Button variant="destructive" onClick={() => removeVideo()} disabled={processing || !video || videoNotFound}>
+                            <FaTrashAlt /> Delete
                         </Button>
-                        <Button disabled={!video || videoNotFound}>
+                        <Button disabled={processing || !video || videoNotFound}>
                             <FaDownload /> Download
                         </Button>
                     </div>

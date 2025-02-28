@@ -4,5 +4,5 @@ export type useVideoReturn = {
     video: VideoType | null;
     videoNotFound: boolean;
     removeVideo: () => void;
-    deleting: boolean;
+    processing: boolean;
 };
