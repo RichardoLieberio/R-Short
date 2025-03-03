@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useCallback, useState, useEffect } from 'react';
 import { VideoType } from './types';
 
-export function usePlayer(video: VideoType | null, small: boolean): { height: number, loading: boolean } {
+export function usePlayer(video: VideoType | undefined, small: boolean): { height: number, loading: boolean } {
     const getHeight: () => number = useCallback(() => {
         const innerWidth: number = window.innerWidth - (small ? 50 : 50);
         const innerHeight: number = window.innerHeight - (small ? 200 : 150);
@@ -49,7 +49,7 @@ export function usePlayer(video: VideoType | null, small: boolean): { height: nu
 
         if (video) {
             setLoading(false);
-            preloadVideo();
+            if (video.status === 'created') preloadVideo();
         }
     }, [ video ]);
 

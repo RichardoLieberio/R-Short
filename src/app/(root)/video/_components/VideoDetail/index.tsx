@@ -2,7 +2,7 @@ import { VideoType } from '../../types';
 import { JSX } from 'react';
 import Skeleton from '@components/Skeleton';
 
-export default function VideoDetail({ videoNotFound, video }: { videoNotFound: boolean, video: VideoType | null }): JSX.Element {
+export default function VideoDetail({ videoNotFound, video }: { videoNotFound: boolean, video: VideoType | undefined }): JSX.Element {
     return (
         <div className="flex flex-col gap-4">
             <span className="flex items-center gap-2">

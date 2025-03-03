@@ -15,7 +15,7 @@ export type VideoContainerProps = {
 
 export type VideoPlayerProps = {
     videoNotFound: boolean;
-    video: VideoType | null;
+    video: VideoType | undefined;
     small: boolean;
 };
 
@@ -28,6 +28,7 @@ export type SceneProps = {
 
 export type VideoType = {
     id: number;
+    status: 'pending' | 'created' | 'failed';
     style: string;
     duration: '15' | '30' | '60';
     storyboard: string;
@@ -39,6 +40,7 @@ export type VideoType = {
 
 export type UnknownVideoType = {
     id: number;
+    status: 'pending' | 'created' | 'failed';
     style: string;
     duration: '15' | '30' | '60';
     storyboard: string;
