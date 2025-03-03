@@ -14,11 +14,9 @@ export default function VideoCard({ video, lastVideo }: { video: VideosType, las
         <Link href={`/video/${video.id}${lastVideo ? '?last=1' : ''}`}>
             <Card className="relative w-32 h-48 rounded-lg overflow-hidden group">
                 {
-                    video.status === 'pending' && <div className="w-32 h-48 absolute brightness-75 bg-black">
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2">
-                            <MoonLoader size={20} color="#ffffff" speedMultiplier={0.8} />
-                            <small className="text-xs md:text-sm">Generating</small>
-                        </div>
+                    video.status === 'pending' && <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2">
+                        <MoonLoader size={20} color="#ffffff" speedMultiplier={0.8} />
+                        <small className="text-xs md:text-sm">Generating</small>
                     </div>
                 }
                 {
@@ -30,11 +28,9 @@ export default function VideoCard({ video, lastVideo }: { video: VideosType, las
                     </>
                 }
                 {
-                    video.status === 'failed' && <div className="w-32 h-48 absolute bg-black">
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex jusitfy-center gap-1 text-destructive">
-                            <MdErrorOutline className="text-xl" />
-                            <small className="text-xs md:text-sm">Error</small>
-                        </div>
+                    video.status === 'failed' && <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex jusitfy-center gap-1 text-destructive">
+                        <MdErrorOutline className="text-xl" />
+                        <small className="text-xs md:text-sm">Error</small>
                     </div>
                 }
             </Card>

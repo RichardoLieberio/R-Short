@@ -1,5 +1,16 @@
 export type VideoPageProps = {
-    searchParams: Promise<{ page: string | string[] | undefined }>
+    searchParams: Promise<{ page: string | string[] | undefined }>;
+};
+
+export type VideosType = {
+    id: number;
+    status: 'pending' | 'created' | 'failed';
+    imageUri: string;
+}
+
+export type VideoContainerProps = {
+    videos: VideosType[];
+    lastVideo: boolean;
 };
 
 export type VideoPlayerProps = {

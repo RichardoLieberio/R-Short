@@ -1,4 +1,4 @@
-import { VideoPageProps } from './types';
+import { VideoPageProps, VideosType } from './types';
 import { JSX } from 'react';
 import { notFound } from 'next/navigation';
 import { ClerkMiddlewareAuthObject, auth } from '@clerk/nextjs/server';
@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { Button } from '@components/shadcn/button';
 import { Card } from '@components/shadcn/card';
 import { IoIosAdd } from 'react-icons/io';
-import VideoCard from './_components/VideoCard';
+import VideoContainer from './_components/VideoContainer';
 import VideoPagination from './_components/VideoPagination';
 
 export default async function VideoPage({ searchParams }: VideoPageProps): Promise<JSX.Element> {
@@ -21,15 +21,19 @@ export default async function VideoPage({ searchParams }: VideoPageProps): Promi
     const { userId }: ClerkMiddlewareAuthObject = await auth();
     const offset: number = (+pageValue - 1) * 5;
 
-    const [ videos, total ]: [ { id: number, imageUri: string }[], number ] = await Promise.all([
-        db.select({ id: Video.id, imageUris: Video.image_uri })
+    const [ videos, total ]: [ VideosType[], number ] = await Promise.all([
+        db.select({ id: Video.id, status: Video.status, imageUris: Video.image_uri })
             .from(Video)
             .innerJoin(User, eq(User.id, Video.user_id))
             .where(eq(User.clerk_id, userId!))
             .orderBy(desc(Video.created_at))
             .limit(5)
             .offset(offset)
-            .then((results) => results.map((video) => ({ id: video.id, imageUri: (video.imageUris as string[])[0] }))),
+            .then((results) => results.map((video) => ({
+                id: video.id,
+                status: video.status,
+                imageUri: video.status === 'created' ? (video.imageUris as string[])[0] : '',
+            }))),
         db.select({ total: sql<number>`COUNT(*)` })
             .from(Video)
             .innerJoin(User, eq(User.id, Video.user_id))
@@ -58,7 +62,7 @@ export default async function VideoPage({ searchParams }: VideoPageProps): Promi
                             </Card>
                         </Link>
                     }
-                    { videos.map((video) => <VideoCard key={video.id} id={video.id} imageUri={video.imageUri} lastVideo={videos.length === 1 && +pageValue !== 1} />) }
+                    <VideoContainer videos={videos} lastVideo={videos.length === 1 && +pageValue !== 1} />
                 </main>
                 <footer className="flex justify-center">
                     <VideoPagination page={+pageValue} total={total} />
