@@ -44,7 +44,11 @@ export async function POST(req: Request): Promise<NextResponse> {
                 return insertedId;
             });
 
-            socket.emit('generate', { userId: user.id, insertedId, style, duration, storyboard });
+            fetch('http://localhost:4000/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, insertedId, style, duration, storyboard }),
+            });
 
             return NextResponse.json({ message: 'Success', id: insertedId }, { status: 200 });
         }
