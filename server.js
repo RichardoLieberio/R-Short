@@ -9,11 +9,13 @@ const server = createServer(app);
 const io = new Server(server, {
     cors: {
         origin: process.env.CLIENT_URI,
-        methods: [ 'GET', 'POST' ],
+        methods: [ 'POST' ],
         allowedHeaders: [ 'Authorization' ],
         credentials: true
     },
 });
+
+app.use(express.json());
 
 io.use((socket, next) => {
     const userId = socket.handshake.auth.userId;
@@ -24,15 +26,16 @@ io.use((socket, next) => {
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
 
-    socket.on('generate', async (data) => {
-        const result = await generate({ ...data });
-        if (result) socket.emit('generate:success', { videoId: data.insertedId });
-        else socket.emit('generate:failed', { videoId: data.insertedId });
-    });
-
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
     });
+});
+
+app.post('/generate', async (req, res) => {
+    const { userId, insertedId, style, duration, storyboard } = req.body;
+    const result = await generate({ userId, insertedId, style, duration, storyboard });
+    if (result) io.to(userId).emit('generate:success', { videoId: insertedId, ...result });
+    else io.to(userId).emit('generate:failed', { videoId: insertedId });
 });
 
 server.listen(process.env.PORT, () => {

@@ -40,18 +40,17 @@ export async function generate({ userId, insertedId, style, duration, storyboard
                 return { audio_uri: JSON.stringify(audioUris), image_uri: JSON.stringify(imageUris), captions: JSON.stringify(captions) };
             });
 
-        await db.update(Video).set({ folder: uuid, ...result, status: 'created' }).where(eq(Video.id, insertedId));
-        return true;
+        const newData = { folder: uuid, ...result, status: 'created' };
+        await db.update(Video).set(newData).where(eq(Video.id, insertedId));
+        return newData;
     } catch (error) {
         console.error(error);
         await db.transaction(async (tx) => {
             await Promise.all([
-                tx.delete(Video).where(eq(Video.id, insertedId)),
+                tx.update(Video).set({ status: 'failed' }).where(eq(Video.id, insertedId)),
                 tx.update(User).set({ coin: sql`${User.coin} + 1` }).where(and(eq(User.id, userId), eq(User.role, 'user'))),
             ]);
-
         });
-        return false;
     }
 }
 
