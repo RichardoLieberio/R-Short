@@ -10,14 +10,6 @@ export function getSocket(userId: string | null | undefined): Socket | null {
             console.log('Connected to socket service:', socket!.id);
         });
 
-        socket.on('generate:success', ({ videoId }: { videoId: number }) => {
-            console.log('Generate successful:', videoId);
-        });
-
-        socket.on('generate:failed', ({ videoId }: { videoId: number }) => {
-            console.log('Generate failed:', videoId);
-        });
-
         socket.on('disconnect', () => {
             console.log('Disconnected from socket service');
         });
