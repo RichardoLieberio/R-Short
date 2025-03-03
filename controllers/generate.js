@@ -48,9 +48,10 @@ export async function generate({ userId, insertedId, style, duration, storyboard
         await db.transaction(async (tx) => {
             await Promise.all([
                 tx.update(Video).set({ status: 'failed' }).where(eq(Video.id, insertedId)),
-                tx.update(User).set({ coin: sql`${User.coin} + 1` }).where(and(eq(User.id, userId), eq(User.role, 'user'))),
+                tx.update(User).set({ coin: sql`${User.coin} + 1` }).where(and(eq(User.clerk_id, userId), eq(User.role, 'user'))),
             ]);
         });
+        return null;
     }
 }
 

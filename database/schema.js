@@ -1,6 +1,16 @@
 import { pgEnum, pgTable, integer, varchar, json, timestamp } from 'drizzle-orm/pg-core';
 
-export const videoStatusEnum = pgEnum('status', [ 'pending', 'created' ]);
+export const userRoleEnum = pgEnum('user_role', [ 'user', 'admin' ]);
+export const User = pgTable('users', {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    clerk_id: varchar({ length: 50 }).notNull().unique(),
+    email: varchar({ length: 255 }).notNull().unique(),
+    role: userRoleEnum().notNull().default('user'),
+    coin: integer().notNull().default(2),
+    created_at: timestamp().notNull().defaultNow(),
+});
+
+export const videoStatusEnum = pgEnum('status', [ 'pending', 'created', 'failed' ]);
 export const videoDurationEnum = pgEnum('duration', [ '15', '30', '60' ]);
 export const Video = pgTable('videos', {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -13,15 +23,5 @@ export const Video = pgTable('videos', {
     audio_uri: json(),
     image_uri: json(),
     captions: json(),
-    created_at: timestamp().notNull().defaultNow(),
-});
-
-export const userRoleEnum = pgEnum('user_role', [ 'user', 'admin' ]);
-export const User = pgTable('users', {
-    id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    clerk_id: varchar({ length: 50 }).notNull().unique(),
-    email: varchar({ length: 255 }).notNull().unique(),
-    role: userRoleEnum().notNull().default('user'),
-    coin: integer().notNull().default(2),
     created_at: timestamp().notNull().defaultNow(),
 });
