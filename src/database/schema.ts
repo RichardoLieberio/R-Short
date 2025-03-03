@@ -3,7 +3,7 @@
 import { pgTable, integer, pgEnum, varchar, json, timestamp } from 'drizzle-orm/pg-core';
 
 export const userRoleEnum = pgEnum('user_role', [ 'user', 'admin' ]);
-export const videoStatusEnum = pgEnum('status', [ 'pending', 'created' ]);
+export const videoStatusEnum = pgEnum('status', [ 'pending', 'created', 'failed' ]);
 export const videoDurationEnum = pgEnum('duration', [ '15', '30', '60' ]);
 export const transactionTypeEnum = pgEnum('type', [ 'global', 'local' ]);
 
