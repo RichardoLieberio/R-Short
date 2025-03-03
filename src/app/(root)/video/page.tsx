@@ -51,7 +51,9 @@ export default async function VideoPage({ searchParams }: VideoPageProps): Promi
             <main className="mt-12 space-y-8 md:space-y-12">
                 <header className="flex items-center justify-between">
                     <span>Result: { videos.length ? startIndex : '0' } - { endIndex } of { total }</span>
-                    <Button>Generate video</Button>
+                    <Link href="/generate">
+                        <Button>Generate video</Button>
+                    </Link>
                 </header>
                 <main className="w-[272px] min-[448px]:w-[416px] min-[592px]:w-[560px] min-[746px]:w-[704px] mx-auto flex flex-wrap justify-center gap-4">
                     {

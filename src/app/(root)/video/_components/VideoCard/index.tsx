@@ -30,7 +30,7 @@ export default function VideoCard({ video, lastVideo }: { video: VideosType, las
                 {
                     video.status === 'failed' && <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex jusitfy-center gap-1 text-destructive">
                         <MdErrorOutline className="text-xl" />
-                        <small className="text-xs md:text-sm">Error</small>
+                        <small className="text-xs md:text-sm">Failed</small>
                     </div>
                 }
             </Card>
