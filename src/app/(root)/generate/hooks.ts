@@ -25,7 +25,7 @@ export function useGenerateForm(): useGenerateFormReturn {
                     body: JSON.stringify(values),
                 });
 
-                if (response.ok) {
+                if (response.status === 200) {
                     dispatch(reduceCoin());
                     setStatus('done');
                 } else if (response.status === 429) {
