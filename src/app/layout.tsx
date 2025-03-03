@@ -9,7 +9,7 @@ import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
 import ClerkAuth from './_components/ClerkAuth';
 import StoreProvider from './_components/StoreProvider';
-import SocketProvider from './_components/SocketProvider';
+import SocketProvider from '@components/SocketProvider';
 
 const dmSans: NextFont = DM_Sans({
     subsets: [ 'latin' ],
