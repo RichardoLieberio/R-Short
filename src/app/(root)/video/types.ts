@@ -19,13 +19,6 @@ export type VideoPlayerProps = {
     small: boolean;
 };
 
-export type SceneProps = {
-    scale: number;
-    imageUri: string;
-    audioUri: string;
-    captions: Caption[],
-};
-
 export type VideoType = {
     id: number;
     status: 'pending' | 'created' | 'failed';

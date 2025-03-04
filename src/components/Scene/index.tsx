@@ -1,4 +1,4 @@
-import { SceneProps } from '../../types';
+import { SceneProps } from './types';
 import { JSX } from 'react';
 import { AbsoluteFill, Img, Audio, Sequence } from 'remotion';
 

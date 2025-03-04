@@ -3,7 +3,7 @@
 import { VideoType } from '../../app/(root)/video/types';
 import { JSX } from 'react';
 import { useCurrentFrame, Sequence, interpolate } from 'remotion';
-import Scene from '../../app/(root)/video/_components/Scene';
+import Scene from '@components/Scene';
 
 export default function Video({ video, durations }: { video: VideoType, durations: number[] }): JSX.Element {
     const frame: number = useCurrentFrame();
