@@ -6,6 +6,5 @@ export default z.object({
         .max(30, { message: 'Style cannot exceed 30 characters.' }),
     duration: z.enum([ '15', '30', '60' ]),
     storyboard: z.string()
-        .min(20, { message: 'Storyboard must be at least 20 characters.' })
-        .max(255, { message: 'Storyboard cannot exceed 255 characters.' }),
+        .min(20, { message: 'Storyboard must be at least 20 characters.' }),
 });

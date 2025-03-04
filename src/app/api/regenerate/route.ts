@@ -22,11 +22,11 @@ export async function POST(req: Request): Promise<NextResponse> {
 
         if (user.role === 'admin' || user.coin > 0) {
             const { videoId }: { videoId: number } = await req.json();
-            const video: { style: string, duration: '15' | '30' | '60', storyboard: string } | undefined = await db.select({ style: Video.style, duration: Video.duration, storyboard: Video.storyboard })
-                .from(Video)
-                .innerJoin(User, eq(User.id, Video.user_id))
+            const video: { style: string, duration: '15' | '30' | '60', storyboard: string } | undefined = await db.update(Video)
+                .set({ status: 'pending' })
+                .from(User)
                 .where(and(eq(Video.id, videoId), eq(User.clerk_id, userId)))
-                .limit(1)
+                .returning({ style: Video.style, duration: Video.duration, storyboard: Video.storyboard })
                 .then((videos) => videos[0]);
 
             if (!video) return NextResponse.json({ message: 'Video not found' }, { status: 404 });
