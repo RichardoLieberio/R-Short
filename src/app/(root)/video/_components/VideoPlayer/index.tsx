@@ -7,7 +7,7 @@ import Skeleton from '@components/Skeleton';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { MdErrorOutline } from 'react-icons/md';
 import { Player } from '@remotion/player';
-import Video from '../Video';
+import Video from '@components/Video';
 import BlankScene from '../BlankScene';
 
 export default function VideoPlayer({ videoNotFound, video, small }: VideoPlayerProps): JSX.Element {
