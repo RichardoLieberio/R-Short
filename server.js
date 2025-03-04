@@ -33,6 +33,7 @@ io.on('connection', (socket) => {
 
 app.post('/generate', async (req, res) => {
     const { userId, insertedId, style, duration, storyboard } = req.body;
+    io.to(userId).emit('generate:pending', { videoId: insertedId });
     const result = await generate({ userId, insertedId, style, duration, storyboard });
     if (result) io.to(userId).emit('generate:success', { videoId: insertedId, ...result });
     else io.to(userId).emit('generate:failed', { videoId: insertedId });
