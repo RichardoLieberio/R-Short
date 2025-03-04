@@ -5,7 +5,7 @@ import { Button } from '@components/shadcn/button';
 import AlertDialogContent from '@components/AlertDialogContent';
 import { MdOutlineCheckCircleOutline, MdErrorOutline } from 'react-icons/md';
 
-export default function Alert({ status, setStatus }: { status: string, setStatus: Dispatch<SetStateAction<string>> }): JSX.Element {
+export default function Alert({ status, setStatus, navigate }: { status: string, setStatus: Dispatch<SetStateAction<string>>, navigate: boolean }): JSX.Element {
     const dot: string = useDots();
 
     if (status === 'loading') {
@@ -20,7 +20,11 @@ export default function Alert({ status, setStatus }: { status: string, setStatus
             <AlertDialogContent
                 title={ <span className="flex items-center gap-2"><MdOutlineCheckCircleOutline /> Success</span> }
                 description={ <span>Your request has been received</span> }
-                footer={ <Link href="/video"><Button>Go to video</Button></Link> }
+                footer={
+                    navigate
+                        ? <Link href="/video"><Button>Go to video</Button></Link>
+                        : <Button onClick={() => setStatus('')}>Close</Button>
+                }
             />
         );
     } else {

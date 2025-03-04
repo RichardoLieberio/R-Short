@@ -8,7 +8,7 @@ import { useGenerateForm } from './hooks';
 import Style from './_components/Style';
 import Duration from './_components/Duration';
 import Storyboard from './_components/StoryBoard';
-import Alert from './_components/Alert';
+import Alert from '@components/Alert';
 
 import { Form } from '@components/shadcn/form';
 import { Button } from '@components/shadcn/button';
@@ -28,7 +28,7 @@ export default function GeneratePage(): JSX.Element {
                 </form>
             </Form>
             <AlertDialog open={!!status}>
-                <Alert status={status} setStatus={setStatus} />
+                <Alert status={status} setStatus={setStatus} navigate={true} />
             </AlertDialog>
         </div>
     );
