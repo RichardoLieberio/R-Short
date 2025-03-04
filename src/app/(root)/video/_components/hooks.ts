@@ -1,11 +1,12 @@
 import { VideosType, VideoType } from '../types';
+import { useVideoReturn, useVideoActionsReturn } from './types';
 import { Dispatch, SetStateAction, useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
 import { useSocket } from '@components/SocketProvider';
 import { useVideoGenerateSuccess } from './types';
 import { deleteVideo, getVideo } from '../action';
 import { useAppDispatch, AppDispatch, useAppSelector } from '@store';
-import { addProcess, removeProcess } from '@store/user';
+import { addProcess, removeProcess, reduceCoin } from '@store/user';
 
 export function useVideoContainer(videos: VideosType[]): { renderVideos: VideosType[] } {
     const [ renderVideos, setRenderVideos ]: [ VideosType[], Dispatch<SetStateAction<VideosType[]>> ] = useState(videos);
@@ -17,6 +18,16 @@ export function useVideoContainer(videos: VideosType[]): { renderVideos: VideosT
 
     useEffect(() => {
         if (socket) {
+            socket.on('generate:pending', ({ videoId }: { videoId: number }) => {
+                if (renderVideos.find((video) => video.id === videoId)) {
+                    const newVideos: VideosType[] = renderVideos.map((video) => {
+                        if (video.id === videoId) return { ...video, status: 'pending' };
+                        return video;
+                    });
+                    setRenderVideos(newVideos);
+                }
+            });
+
             socket.on('generate:success', ({ videoId, image_uri }: { videoId: number, image_uri: string }) => {
                 if (renderVideos.find((video) => video.id === videoId)) {
                     const imageUri: string = JSON.parse(image_uri)[0];
@@ -43,12 +54,18 @@ export function useVideoContainer(videos: VideosType[]): { renderVideos: VideosT
     return { renderVideos };
 }
 
-export function useVideo(id: number): VideoType | undefined | null {
+export function useVideo(id: number): useVideoReturn {
     const [ video, setVideo ]: [ VideoType | undefined | null, Dispatch<SetStateAction<VideoType | undefined | null>> ] = useState<VideoType | undefined | null>(undefined);
     const { socket }: { socket: Socket | null } = useSocket();
 
+    const processing: number[] = useAppSelector((state) => state.user.processing);
+
     useEffect(() => {
         if (socket) {
+            socket.on('generate:pending', ({ videoId }: { videoId: number }) => {
+                if (video && video.id === videoId) setVideo({ ...video, status: 'pending' });
+            });
+
             socket.on('generate:success', ({ videoId, audio_uri, image_uri, captions }: useVideoGenerateSuccess) => {
                 if (video && video.id === videoId) setVideo({
                     ...video,
@@ -76,19 +93,47 @@ export function useVideo(id: number): VideoType | undefined | null {
         fetchVideo();
     }, [ id ]);
 
-    return video;
+    return { video, processing: processing.includes(id) };
 }
 
-export function useActionButton(id: number | undefined): { processing: boolean, removeVideo: () => void } {
+export function useVideoActions(video: VideoType | undefined): useVideoActionsReturn {
+    const [ status, setStatus ]: [ string, Dispatch<SetStateAction<string>> ] = useState('');
+
     const processing: number[] = useAppSelector((state) => state.user.processing);
     const dispatch: AppDispatch = useAppDispatch();
 
-    async function removeVideo(): Promise<void> {
-        if (id) {
-            if (!processing.includes(id)) {
-                dispatch(addProcess(id));
+    async function regenerateVideo(): Promise<void> {
+        if (video) {
+            if (!processing.includes(video.id) && !status) {
+                try {
+                    setStatus('loading');
+                    const response: Response = await fetch('/api/regenerate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ videoId: video.id }),
+                    });
 
-                const deletedId: number | void = await deleteVideo(id);
+                    if (response.status === 200) {
+                        dispatch(reduceCoin());
+                        setStatus('done');
+                    } else if (response.status === 400 || response.status === 404) {
+                        const { message }: { message: string } = await response.json();
+                        setStatus(message);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    setStatus('Something went wrong');
+                }
+            }
+        }
+    }
+
+    async function removeVideo(): Promise<void> {
+        if (video) {
+            if (!processing.includes(video.id)) {
+                dispatch(addProcess(video.id));
+
+                const deletedId: number | void = await deleteVideo(video.id);
                 if (deletedId) {
                     setTimeout(() => {
                         history.replaceState(null, '', `/video`);
@@ -96,10 +141,10 @@ export function useActionButton(id: number | undefined): { processing: boolean, 
                     }, 1);
                 }
 
-                dispatch(removeProcess(id));
+                dispatch(removeProcess(video.id));
             }
         }
     }
 
-    return { processing: id ? processing.includes(id) : false, removeVideo };
+    return { status, setStatus, regenerateVideo, removeVideo };
 }

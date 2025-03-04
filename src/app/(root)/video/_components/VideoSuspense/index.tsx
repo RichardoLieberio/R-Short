@@ -1,7 +1,7 @@
 'use client';
 
 import { JSX } from 'react';
-import { VideoType } from '../../types';
+import { useVideoReturn } from '../types';
 import { useVideo } from '../hooks';
 import VideoPlayer from '../VideoPlayer';
 import { Popover, PopoverContent, PopoverTrigger } from '@components/shadcn/popover';
@@ -10,7 +10,7 @@ import VideoDetail from '../VideoDetail';
 import VideoActions from '../VideoActions';
 
 export default function VideoSuspense({ id }: { id: number }): JSX.Element {
-    const video: VideoType | undefined | null = useVideo(id);
+    const { video, processing }: useVideoReturn = useVideo(id);
 
     return (
         <div className="w-fit h-fit absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col lg:flex-row gap-4 lg:gap-16">
@@ -28,11 +28,9 @@ export default function VideoSuspense({ id }: { id: number }): JSX.Element {
                 </Popover>
             </main>
             <footer className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 lg:flex-col lg:justify-start lg:gap-12">
-                {
-                    <div className="flex flex-col-reverse sm:flex-row gap-2">
-                        <VideoActions video={video ? video : undefined} />
-                    </div>
-                }
+                <div className="flex flex-col-reverse sm:flex-row gap-2">
+                    <VideoActions video={video ? video : undefined} processing={processing} />
+                </div>
                 <div className="hidden lg:block w-96">
                     <VideoDetail videoNotFound={video === null} video={video ? video : undefined} />
                 </div>
