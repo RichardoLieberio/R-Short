@@ -1,6 +1,6 @@
 import { ReactNode, JSX } from 'react';
-import { ClerkMiddlewareAuthObject, auth, clerkClient, User as ClerkUser } from '@clerk/nextjs/server';
 import { ClerkClient } from '@clerk/backend';
+import { auth, clerkClient, User as ClerkUser, ClerkMiddlewareAuthObject } from '@clerk/nextjs/server';
 import { db, User } from '@database';
 
 export default async function ClerkAuth({ children }: { children: ReactNode }): Promise<JSX.Element> {

@@ -4,8 +4,8 @@ import { ClerkMiddlewareAuthObject, auth } from '@clerk/nextjs/server';
 import Link from 'next/link';
 import Image from 'next/image';
 import { SignedIn, SignedOut, UserButton, SignUpButton, SignInButton } from '@clerk/nextjs';
-import Coin from './_components/Coin';
 import { Button } from '@components/shadcn/button';
+import Coin from './_components/Coin';
 
 export default async function Header(): Promise<JSX.Element> {
     const { sessionClaims }: ClerkMiddlewareAuthObject = await auth();

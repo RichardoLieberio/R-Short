@@ -7,9 +7,9 @@ import 'react-loading-skeleton/dist/skeleton.css';
 import './globals.css';
 
 import { ClerkProvider } from '@clerk/nextjs';
+import SocketProvider from '@components/SocketProvider';
 import ClerkAuth from './_components/ClerkAuth';
 import StoreProvider from './_components/StoreProvider';
-import SocketProvider from '@components/SocketProvider';
 
 const dmSans: NextFont = DM_Sans({
     subsets: [ 'latin' ],
