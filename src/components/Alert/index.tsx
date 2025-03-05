@@ -1,11 +1,15 @@
-import { Dispatch, SetStateAction, JSX } from 'react';
-import { useDots } from './hooks';
-import Link from 'next/link';
-import { Button } from '@components/shadcn/button';
-import AlertDialogContent from '@components/AlertDialogContent';
-import { MdOutlineCheckCircleOutline, MdErrorOutline } from 'react-icons/md';
+import { JSX } from 'react';
 
-export default function Alert({ status, setStatus, navigate }: { status: string, setStatus: Dispatch<SetStateAction<string>>, navigate: boolean }): JSX.Element {
+import Link from 'next/link';
+import { MdOutlineCheckCircleOutline, MdErrorOutline } from 'react-icons/md';
+import { AlertDialogContent as ShadcnAlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@components/shadcn/alert-dialog';
+import { Button } from '@components/shadcn/button';
+
+import { useDots } from './hooks';
+
+import { AlertProps, AlertDialogContentProps } from './types';
+
+export default function Alert({ status, setStatus, navigate }: AlertProps): JSX.Element {
     const dot: string = useDots();
 
     if (status === 'loading') {
@@ -36,4 +40,18 @@ export default function Alert({ status, setStatus, navigate }: { status: string,
             />
         );
     }
+}
+
+function AlertDialogContent({ title, description, footer }: AlertDialogContentProps): JSX.Element {
+    return (
+        <ShadcnAlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>{ title }</AlertDialogTitle>
+                <AlertDialogDescription>{ description }</AlertDialogDescription>
+            </AlertDialogHeader>
+            {
+                footer && <AlertDialogFooter>{ footer }</AlertDialogFooter>
+            }
+        </ShadcnAlertDialogContent>
+    );
 }

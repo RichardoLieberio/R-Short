@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState, useEffect } from 'react';
+import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 
 export function useDots(): string {
     const [ dot, setDot ]: [ string, Dispatch<SetStateAction<string>> ] = useState('');
