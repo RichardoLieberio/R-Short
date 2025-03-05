@@ -38,7 +38,7 @@ export async function POST(req: Request): Promise<NextResponse> {
                 return insertedId;
             });
 
-            fetch(process.env.SERVICE_URI! + '/generate', {
+            fetch(process.env.SERVICE_URI!, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, insertedId, style, duration, storyboard }),

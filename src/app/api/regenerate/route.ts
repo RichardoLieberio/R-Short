@@ -29,7 +29,7 @@ export async function POST(req: Request): Promise<NextResponse> {
 
             if (!video) return NextResponse.json({ message: 'Video not found' }, { status: 404 });
 
-            fetch(process.env.SERVICE_URI! + '/generate', {
+            fetch(process.env.SERVICE_URI!, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, insertedId: videoId, ...video }),
