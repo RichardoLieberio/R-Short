@@ -1,4 +1,4 @@
-import { JSX } from 'react';
+import { JSX, Dispatch, SetStateAction, ReactNode } from 'react';
 
 import Link from 'next/link';
 import { MdOutlineCheckCircleOutline, MdErrorOutline } from 'react-icons/md';
@@ -7,7 +7,11 @@ import { Button } from '@components/shadcn/button';
 
 import { useDots } from './hooks';
 
-import { AlertProps, AlertDialogContentProps } from './types';
+type AlertProps = {
+    status: string;
+    setStatus: Dispatch<SetStateAction<string>>;
+    navigate: boolean;
+};
 
 export default function Alert({ status, setStatus, navigate }: AlertProps): JSX.Element {
     const dot: string = useDots();
@@ -41,6 +45,12 @@ export default function Alert({ status, setStatus, navigate }: AlertProps): JSX.
         );
     }
 }
+
+type AlertDialogContentProps = {
+    title: ReactNode;
+    description: ReactNode;
+    footer?: ReactNode;
+};
 
 function AlertDialogContent({ title, description, footer }: AlertDialogContentProps): JSX.Element {
     return (
