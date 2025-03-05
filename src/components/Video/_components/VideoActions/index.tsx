@@ -1,17 +1,37 @@
 'use client';
 
-import { VideoType } from '../../types';
 import { JSX } from 'react';
-import { useVideoActionsReturn } from '../types';
-import { useVideoActions } from '../hooks';
-import Skeleton from '@components/Skeleton';
-import { Button } from '@components/shadcn/button';
+
 import { FaUndoAlt, FaTrashAlt, FaDownload } from 'react-icons/fa';
+import { Button } from '@components/shadcn/button';
 import { AlertDialog } from '@components/shadcn/alert-dialog';
+import Skeleton from '@components/Skeleton';
 import Alert from '@components/Alert';
 
-export default function VideoActions({ video, processing }: { video: VideoType | undefined, processing: boolean }): JSX.Element {
-    const { status, setStatus, regenerateVideo, removeVideo }: useVideoActionsReturn = useVideoActions(video);
+import { useVideoActions } from './hooks';
+
+import { useVideoActionsReturn } from './types';
+import { VideoType } from '../../types';
+
+type VideoActionsProps = {
+    videoNotFound: boolean;
+    video: VideoType | undefined;
+    processing: boolean;
+};
+
+export default function VideoActions({ videoNotFound, video, processing }: VideoActionsProps): JSX.Element {
+    const { status, setStatus, regenerateVideo, downloadVideo, removeVideo }: useVideoActionsReturn = useVideoActions(video);
+
+    if (videoNotFound) return (
+        <>
+            <Button variant="destructive" disabled>
+                <FaTrashAlt /> Delete
+            </Button>
+            <Button disabled>
+                <FaDownload /> Download
+            </Button>
+        </>
+    );
 
     if (!video) return (
         <Skeleton className="w-full h-9 rounded-md" containerClassName="flex-1" />
@@ -27,7 +47,7 @@ export default function VideoActions({ video, processing }: { video: VideoType |
                     ? <Button onClick={regenerateVideo} disabled={processing}>
                         <FaUndoAlt /> Regenerate
                     </Button>
-                    : <Button disabled={processing || video.status === 'pending'}>
+                    : <Button onClick={downloadVideo} disabled={processing || video.status !== 'created'}>
                         <FaDownload /> Download
                     </Button>
             }

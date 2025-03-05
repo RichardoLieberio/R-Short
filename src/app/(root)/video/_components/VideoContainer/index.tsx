@@ -12,7 +12,11 @@ import { useVideoContainer } from './hooks';
 import { useVideoContainerReturn } from './types';
 import { videoPreviewType } from '../../types';
 
-type VideoContainerProps = { videos: videoPreviewType[], lastVideo: boolean };
+type VideoContainerProps = {
+    videos: videoPreviewType[];
+    lastVideo: boolean;
+};
+
 export default function VideoContainer({ videos, lastVideo }: VideoContainerProps): JSX.Element {
     const { renderVideos }: useVideoContainerReturn = useVideoContainer(videos);
 

@@ -1,9 +1,14 @@
 import { JSX } from 'react';
 import Link from 'next/link';
-import { Button } from '@components/shadcn/button';
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
+import { Button } from '@components/shadcn/button';
 
-export default function VideoPagination({ page, total }: { page: number, total: number }): JSX.Element {
+type VideoPaginationProps = {
+    page: number;
+    total: number;
+};
+
+export default function VideoPagination({ page, total }: VideoPaginationProps): JSX.Element {
     const totalPages: number = Math.ceil(total / 5);
     let pages: number[];
 
