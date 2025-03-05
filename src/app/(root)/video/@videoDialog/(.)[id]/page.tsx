@@ -1,11 +1,11 @@
 'use client';
 
 import { JSX } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { notFound } from 'next/navigation';
+import { useParams, useRouter, notFound } from 'next/navigation';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@components/shadcn/dialog';
-import VideoSuspense from '../../_components/VideoSuspense';
+import Video from '@components/Video';
 
 export default function VideoDialog(): JSX.Element {
     const { id }: { id: string } = useParams();
@@ -29,7 +29,7 @@ export default function VideoDialog(): JSX.Element {
                     <DialogTitle hidden>Video Dialog</DialogTitle>
                     <DialogDescription hidden>Video dialog</DialogDescription>
                 </DialogHeader>
-                <VideoSuspense id={+id} />
+                <Video id={+id} />
             </DialogContent>
         </Dialog>
     );
