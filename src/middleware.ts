@@ -1,6 +1,5 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createRouteMatcher, clerkMiddleware, ClerkMiddlewareAuth, ClerkMiddlewareAuthObject } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
 
 type routeType = (req: NextRequest) => boolean;
 const isPublicRoute: routeType = createRouteMatcher([ '/', '/register(.*)', '/login(.*)' ]);

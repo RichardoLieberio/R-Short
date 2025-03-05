@@ -1,13 +1,11 @@
 /* eslint-disable @typescript-eslint/typedef */
 
-import { configureStore } from '@reduxjs/toolkit';
 import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
 import userReducer from '@store/user';
 
 const store = configureStore({
-    reducer: {
-        user: userReducer,
-    },
+    reducer: { user: userReducer },
 });
 
 export type AppDispatch = typeof store.dispatch;

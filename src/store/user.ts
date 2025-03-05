@@ -15,7 +15,7 @@ export const userSlice = createSlice({
             state.coin = action.payload;
         },
         reduceCoin: (state) => {
-            state.coin! -= 1;
+            if (state.coin !== null) state.coin -= 1;
         },
         addProcess: (state, action: PayloadAction<number>) => {
             state.processing = [ ...state.processing, action.payload ];
