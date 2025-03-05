@@ -11,11 +11,11 @@ import { VideoType } from '../../types';
 export function useVideoActions(video: VideoType | undefined): useVideoActionsReturn {
     const [ status, setStatus ]: [ string, Dispatch<SetStateAction<string>> ] = useState('');
 
-    const processing: number[] = useAppSelector((state) => state.user.processing);
+    const processing: { [ id: number ]: string } = useAppSelector((state) => state.user.processing);
     const dispatch: AppDispatch = useAppDispatch();
 
     async function regenerateVideo(): Promise<void> {
-        if (video && !processing.includes(video.id) && !status) {
+        if (video && !processing[video.id] && !status) {
             try {
                 setStatus('loading');
                 const response: Response = await fetch('/api/regenerate', {
@@ -39,8 +39,8 @@ export function useVideoActions(video: VideoType | undefined): useVideoActionsRe
     }
 
     async function downloadVideo(): Promise<void> {
-        if (video && video.path && !processing.includes(video.id)) {
-            dispatch(addProcess(video.id));
+        if (video && video.path && !processing[video.id]) {
+            dispatch(addProcess({ id: video.id, type: 'download' }));
 
             const blob: Blob = await fetchVideo(video.path);
             const url: string = window.URL.createObjectURL(blob);
@@ -58,8 +58,8 @@ export function useVideoActions(video: VideoType | undefined): useVideoActionsRe
     }
 
     async function removeVideo(): Promise<void> {
-        if (video && !processing.includes(video.id)) {
-            dispatch(addProcess(video.id));
+        if (video && !processing[video.id]) {
+            dispatch(addProcess({ id: video.id, type: 'delete' }));
 
             await deleteVideo(video.id);
             setTimeout(() => {

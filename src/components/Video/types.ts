@@ -10,5 +10,5 @@ export type VideoType = {
 
 export type useVideoReturn = {
     video: VideoType | undefined | null;
-    processing: boolean;
+    processing: string | undefined;
 };

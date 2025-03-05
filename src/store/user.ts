@@ -2,9 +2,14 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-const initialState: { coin: number | null, processing: number[] } = {
+type initialStateType = {
+    coin: number | null;
+    processing: { [ id: number ]: string };
+};
+
+const initialState: initialStateType = {
     coin: null,
-    processing: [],
+    processing: {},
 };
 
 export const userSlice = createSlice({
@@ -17,11 +22,11 @@ export const userSlice = createSlice({
         reduceCoin: (state) => {
             if (state.coin !== null) state.coin -= 1;
         },
-        addProcess: (state, action: PayloadAction<number>) => {
-            state.processing = [ ...state.processing, action.payload ];
+        addProcess: (state, action: PayloadAction<{ id: number, type: string }>) => {
+            state.processing[action.payload.id] = action.payload.type;
         },
         removeProcess: (state, action: PayloadAction<number>) => {
-            state.processing = state.processing.filter((id) => id !== action.payload);
+            delete state.processing[action.payload];
         },
     },
 });

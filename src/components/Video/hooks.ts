@@ -12,7 +12,7 @@ export function useVideo(id: number): useVideoReturn {
     const [ video, setVideo ]: [ VideoType | undefined | null, Dispatch<SetStateAction<VideoType | undefined | null>> ] = useState<VideoType | undefined | null>(undefined);
     const { socket }: { socket: Socket | null } = useSocket();
 
-    const processing: number[] = useAppSelector((state) => state.user.processing);
+    const processing: { [ id: number ]: string } = useAppSelector((state) => state.user.processing);
 
     useEffect(() => {
         if (socket) {
@@ -41,5 +41,5 @@ export function useVideo(id: number): useVideoReturn {
         fetchVideo();
     }, [ id ]);
 
-    return { video, processing: processing.includes(id) };
+    return { video, processing: processing[id] };
 }
