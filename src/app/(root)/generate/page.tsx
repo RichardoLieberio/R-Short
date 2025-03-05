@@ -8,8 +8,8 @@ import { useGenerateForm } from './hooks';
 import Style from './_components/Style';
 import Duration from './_components/Duration';
 import Storyboard from './_components/StoryBoard';
-import Alert from '@components/Alert';
 
+import Alert from '@components/Alert';
 import { Form } from '@components/shadcn/form';
 import { Button } from '@components/shadcn/button';
 import { AlertDialog } from '@components/shadcn/alert-dialog';

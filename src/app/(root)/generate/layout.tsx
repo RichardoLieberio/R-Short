@@ -6,5 +6,7 @@ export const metadata: object = {
 };
 
 export default function GenerateLayout({ children }: { children: ReactNode }): JSX.Element {
-    return children as JSX.Element;
+    return (
+        <>{ children }</>
+    );
 }

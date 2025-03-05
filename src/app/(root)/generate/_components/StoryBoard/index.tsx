@@ -1,12 +1,13 @@
 import { JSX } from 'react';
-import { z } from 'zod';
 import { ControllerRenderProps } from 'react-hook-form';
 
-import { formType } from '../../types';
+import { z } from 'zod';
 import formSchema from '@schema/formSchema';
 
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@components/shadcn/form';
 import { Textarea } from '@components/shadcn/textarea';
+
+import { formType } from '../../types';
 
 export default function Storyboard({ form }: formType): JSX.Element {
     return (

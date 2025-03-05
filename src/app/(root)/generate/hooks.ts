@@ -1,11 +1,14 @@
-import { useGenerateFormReturn } from './types';
 import { Dispatch, SetStateAction, useState } from 'react';
+import { useForm, UseFormReturn } from 'react-hook-form';
+
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { UseFormReturn, useForm } from 'react-hook-form';
 import formSchema from '@schema/formSchema';
+
 import { AppDispatch, useAppDispatch } from '@store';
 import { reduceCoin } from '@store/user';
+
+import { useGenerateFormReturn } from './types';
 
 export function useGenerateForm(): useGenerateFormReturn {
     const [ status, setStatus ]: [ string, Dispatch<SetStateAction<string>> ] = useState('');
