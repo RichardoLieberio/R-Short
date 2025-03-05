@@ -3,6 +3,8 @@ import { useState, Dispatch, SetStateAction } from 'react';
 import { useAppSelector, useAppDispatch, AppDispatch } from '@store';
 import { reduceCoin, addProcess, removeProcess } from '@store/user';
 
+import { fetchVideo, deleteVideo } from './actions';
+
 import { useVideoActionsReturn } from './types';
 import { VideoType } from '../../types';
 
@@ -37,26 +39,20 @@ export function useVideoActions(video: VideoType | undefined): useVideoActionsRe
     }
 
     async function downloadVideo(): Promise<void> {
-        if (video && !processing.includes(video.id)) {
+        if (video && video.path && !processing.includes(video.id)) {
             dispatch(addProcess(video.id));
 
-            console.log('Download video');
+            const blob: Blob = await fetchVideo(video.path);
+            const url: string = window.URL.createObjectURL(blob);
 
-            // const videoBlob: Blob | void = await renderVideo(video.id);
-            // if (videoBlob) {
-            //     const url: string = URL.createObjectURL(videoBlob);
-            //     const a: HTMLAnchorElement = document.createElement('a');
+            const anchor: HTMLAnchorElement = document.createElement('a');
+            anchor.href = url;
+            anchor.download = `video-${video.id}.mp4`;
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
 
-            //     a.href = url;
-            //     a.download = `video-${video.id}.mp4`;
-            //     document.body.appendChild(a);
-
-            //     a.click();
-            //     a.remove();
-
-            //     URL.revokeObjectURL(url);
-            // }
-
+            window.URL.revokeObjectURL(url);
             dispatch(removeProcess(video.id));
         }
     }
@@ -65,15 +61,11 @@ export function useVideoActions(video: VideoType | undefined): useVideoActionsRe
         if (video && !processing.includes(video.id)) {
             dispatch(addProcess(video.id));
 
-            console.log('Delete video');
-
-            // const deletedId: number | void = await deleteVideo(video.id);
-            // if (deletedId) {
-            //     setTimeout(() => {
-            //         history.replaceState(null, '', `/video`);
-            //         location.reload();
-            //     }, 1);
-            // }
+            await deleteVideo(video.id);
+            setTimeout(() => {
+                history.replaceState(null, '', `/video`);
+                location.reload();
+            }, 1);
 
             dispatch(removeProcess(video.id));
         }
