@@ -1,6 +1,6 @@
-import { pgEnum, pgTable, integer, varchar, json, timestamp } from 'drizzle-orm/pg-core';
+import { pgEnum, pgTable, integer, varchar, timestamp } from 'drizzle-orm/pg-core';
 
-export const userRoleEnum = pgEnum('user_role', [ 'user', 'admin' ]);
+const userRoleEnum = pgEnum('user_role', [ 'user', 'admin' ]);
 export const User = pgTable('users', {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     clerk_id: varchar({ length: 50 }).notNull().unique(),
@@ -10,8 +10,8 @@ export const User = pgTable('users', {
     created_at: timestamp().notNull().defaultNow(),
 });
 
-export const videoStatusEnum = pgEnum('status', [ 'pending', 'created', 'failed' ]);
-export const videoDurationEnum = pgEnum('duration', [ '15', '30', '60' ]);
+const videoStatusEnum = pgEnum('status', [ 'pending', 'created', 'failed' ]);
+const videoDurationEnum = pgEnum('duration', [ '15', '30', '60' ]);
 export const Video = pgTable('videos', {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     user_id: integer().notNull().references(() => User.id),
@@ -19,9 +19,6 @@ export const Video = pgTable('videos', {
     style: varchar({ length: 30 }).notNull(),
     duration: videoDurationEnum().notNull(),
     storyboard: varchar().notNull(),
-    folder: varchar({ length: 50 }).unique(),
-    audio_uri: json(),
-    image_uri: json(),
-    captions: json(),
+    path: varchar().unique(),
     created_at: timestamp().notNull().defaultNow(),
 });
