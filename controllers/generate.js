@@ -1,31 +1,32 @@
+import firebaseConfig from '../firebase.config.js';
+import path from 'path';
+import fs from 'fs';
+import mime from 'mime';
+
 import { v4 as uuidv4 } from 'uuid';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { initializeApp } from 'firebase/app';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import textToSpeech from '@google-cloud/text-to-speech';
 import { AssemblyAI } from 'assemblyai';
 import Replicate from 'replicate';
-import { initializeApp } from 'firebase/app';
-import { getStorage } from 'firebase/storage';
-import { db, User, Video } from '../database/index.js';
-import { eq, and, sql } from 'drizzle-orm';
 
-const firebaseConfig = {
-    apiKey: process.env.FIREBASE_API_KEY,
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.FIREBASE_APP_ID,
-    measurementId: process.env.FIREBASE_MEASUREMENT_ID,
-};
+import { eq, and, sql } from 'drizzle-orm';
+import { db, User, Video } from '../database/index.js';
+
+import { bundle } from '@remotion/bundler';
+import { renderMedia, selectComposition } from '@remotion/renderer';
 
 export async function generate({ userId, insertedId, style, duration, storyboard }) {
+    const uuid = uuidv4();
+    const folder = path.join(process.cwd(), 'temp', uuid);
+
     try {
-        const uuid = uuidv4();
         const prompt = `Write a script and AI image prompt in ${style.toLowerCase()} format for each scene to generate a ${duration} second video based on the following storyboard:\n\n\"\"\"\n${storyboard}\n\"\"\"\n\nThe output should be provided in JSON format with imagePrompt and contentText as fields.`;
 
         const contents = await generateContent(prompt);
-        const result = await Promise.all([ generateTranscript(uuid, contents), generateImages(uuid, contents) ])
+
+        const video = await Promise.all([ generateTranscript(uuid, contents), generateImages(contents) ])
             .then(([ transcripts, images ]) => {
                 const audioUris = [];
                 const imageUris = [];
@@ -37,14 +38,45 @@ export async function generate({ userId, insertedId, style, duration, storyboard
                     captions.push(transcripts[i].words);
                 }
 
-                return { audio_uri: JSON.stringify(audioUris), image_uri: JSON.stringify(imageUris), captions: JSON.stringify(captions) };
+                return { audioUris, imageUris, captions };
             });
 
-        const newData = { folder: uuid, ...result, status: 'created' };
-        await db.update(Video).set(newData).where(eq(Video.id, insertedId));
-        return newData;
+        const bundleLocation = await bundle({ entryPoint: path.resolve('./remotion/index.js') });
+        const durations = video.captions.map((captions) => Math.ceil((captions.at(-1).end / 1000) * 30 + 15));
+        const inputProps = { video, durations };
+        const composition = await selectComposition({ serveUrl: bundleLocation, id: 'composition', inputProps });
+
+        const videoPath = path.join(process.cwd(), 'temp', id, 'video.mp4');
+
+        await renderMedia({
+            composition,
+            serveUrl: bundleLocation,
+            codec: 'h264',
+            outputLocation: videoPath,
+            inputProps,
+        });
+
+        if (fs.existsSync(videoPath) && mime.getType(videoPath).startsWith('video/')) {
+            const app = initializeApp(firebaseConfig);
+            const storage = getStorage(app);
+            const storageRef = ref(storage, id + '.mp4');
+
+            const videoBuffer = fs.readFileSync(videoPath);
+            const metadata = { contentType: 'video/mp4' };
+            await uploadBytes(storageRef, videoBuffer, metadata);
+
+            const downloadUri = await getDownloadURL(storageRef);
+            await db.update(Video).set({ status: 'created', path: downloadUri }).where(eq(Video.id, insertedId));
+            fs.rmSync(folder, { recursive: true, force: true });
+
+            return downloadUri;
+        } else {
+            throw new Error('Failed to generate video');
+        }
     } catch (error) {
         console.error(error);
+        fs.rmSync(folder, { recursive: true, force: true });
+
         await db.transaction(async (tx) => {
             await Promise.all([
                 tx.update(Video).set({ status: 'failed' }).where(eq(Video.id, insertedId)),
@@ -99,6 +131,7 @@ async function generateContent(prompt) {
 async function generateTranscript(id, contents) {
     const textToSpeechClient = new textToSpeech.TextToSpeechClient({ apiKey: process.env.FIREBASE_API_KEY });
     const assemblyClient = new AssemblyAI({ apiKey: process.env.ASSEMBLY_AI_API_KEY });
+    const folder = path.join(process.cwd(), 'temp', id, 'Audios');
 
     const result = await Promise.all(contents.map(async ({ contentText }, index) => {
         const request = {
@@ -112,15 +145,12 @@ async function generateTranscript(id, contents) {
 
         if (!audioBuffer) throw new Error('Failed to generate audio');
 
-        const app = initializeApp(firebaseConfig);
-        const storage = getStorage(app);
+        fs.mkdirSync(folder, { recursive: true });
 
-        const audioRef = ref(storage, `${id}/Audio/${index + 1}.mp3`);
-        if (audioBuffer) await uploadBytes(audioRef, audioBuffer);
+        const audioUri = path.join(folder, index + '.mp3');
+        fs.writeFileSync(audioUri, audioBuffer);
 
-        const audioUrl = await getDownloadURL(audioRef);
-
-        const assemblyConfig = { audio_url: audioUrl };
+        const assemblyConfig = { audio_url: `${process.env.SERVICE_URI}/${id}/Audios/${index}.mp3` };
         const transcript = await assemblyClient.transcripts.transcribe(assemblyConfig);
 
         return transcript;
@@ -129,10 +159,10 @@ async function generateTranscript(id, contents) {
     return result;
 }
 
-async function generateImages(id, contents) {
+async function generateImages(contents) {
     const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN, useFileOutput: false });
 
-    const result = await Promise.all(contents.map(async ({ imagePrompt }, index) => {
+    const result = await Promise.all(contents.map(async ({ imagePrompt }) => {
         const input = {
             width: 800,
             height: 1200,
@@ -146,21 +176,9 @@ async function generateImages(id, contents) {
 
         const [ object ] = await replicate.run('bytedance/sdxl-lightning-4step:5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637', { input });
 
-        const app = initializeApp(firebaseConfig);
-        const storage = getStorage(app);
-        const imageRef = ref(storage, `${id}/Image/${index + 1}.png`);
+        if (!object) throw new Error('Failed to generate image');
 
-        if (object) {
-            const response = await fetch(object);
-            if (!response.ok) throw new Error('Failed to fetch generated image');
-
-            const blob = await response.blob();
-            await uploadBytes(imageRef, blob);
-        }
-
-        const imageUri = await getDownloadURL(imageRef);
-
-        return imageUri;
+        return object;
     }));
 
     return result;
