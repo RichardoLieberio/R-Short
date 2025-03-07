@@ -47,7 +47,7 @@ export async function POST(req: Request): Promise<NextResponse> {
             return NextResponse.json({ message: 'Success', id: videoId }, { status: 200 });
         }
 
-        return NextResponse.json({ message: "You don't have any coins" }, { status: 400 });
+        return NextResponse.json({ message: "You don't have any coins" }, { status: 403 });
     } catch (error) {
         console.error(error);
         return NextResponse.json({ message: (error as Error).message ?? 'Something went wrong' }, { status: 400 });

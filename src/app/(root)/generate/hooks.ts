@@ -31,6 +31,8 @@ export function useGenerateForm(): useGenerateFormReturn {
                 if (response.status === 200) {
                     dispatch(reduceCoin());
                     setStatus('done');
+                } else if (response.status === 403) {
+                    setStatus('coin');
                 } else if (response.status === 429) {
                     const { errors }: { errors: { style?: string[], duration?: string[], storyboard?: string[] } } = await response.json();
                     Object.entries(errors).forEach(([ key, message ]: [ string, string[] ]) => {

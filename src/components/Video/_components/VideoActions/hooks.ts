@@ -27,6 +27,8 @@ export function useVideoActions(video: VideoType | undefined): useVideoActionsRe
                 if (response.status === 200) {
                     dispatch(reduceCoin());
                     setStatus('done');
+                } else if (response.status === 403) {
+                    setStatus('coin');
                 } else if (response.status === 400 || response.status === 404) {
                     const { message }: { message: string } = await response.json();
                     setStatus(message);

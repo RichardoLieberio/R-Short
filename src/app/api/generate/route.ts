@@ -47,7 +47,7 @@ export async function POST(req: Request): Promise<NextResponse> {
             return NextResponse.json({ message: 'Success', id: insertedId }, { status: 200 });
         }
 
-        return NextResponse.json({ message: "You don't have any coins" }, { status: 400 });
+        return NextResponse.json({ message: "You don't have any coins" }, { status: 403 });
     } catch (error) {
         if (error instanceof z.ZodError) return NextResponse.json({ errors: error.flatten().fieldErrors }, { status: 429 });
         console.error(error);
