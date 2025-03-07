@@ -5,11 +5,13 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 type initialStateType = {
     coin: number | null;
     processing: { [ id: number ]: string };
+    openShop: boolean;
 };
 
 const initialState: initialStateType = {
     coin: null,
     processing: {},
+    openShop: false,
 };
 
 export const userSlice = createSlice({
@@ -28,8 +30,11 @@ export const userSlice = createSlice({
         removeProcess: (state, action: PayloadAction<number>) => {
             delete state.processing[action.payload];
         },
+        setOpenShop: (state, action: PayloadAction<boolean>) => {
+            state.openShop = action.payload;
+        },
     },
 });
 
-export const { setCoin, reduceCoin, addProcess, removeProcess } = userSlice.actions;
+export const { setCoin, reduceCoin, addProcess, removeProcess, setOpenShop } = userSlice.actions;
 export default userSlice.reducer;
