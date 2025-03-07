@@ -1,4 +1,6 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
+import { useAppDispatch, AppDispatch } from '@store';
+import { setOpenShop } from '@store/user';
 
 export function useDots(): string {
     const [ dot, setDot ]: [ string, Dispatch<SetStateAction<string>> ] = useState('');
@@ -15,4 +17,14 @@ export function useDots(): string {
     }, []);
 
     return dot;
+}
+
+export function useOpenShop(): () => void {
+    const dispatch: AppDispatch = useAppDispatch();
+
+    function openShop(): void {
+        dispatch(setOpenShop(true));
+    }
+
+    return openShop;
 }

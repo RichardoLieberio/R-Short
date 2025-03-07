@@ -5,7 +5,7 @@ import { MdOutlineCheckCircleOutline, MdErrorOutline } from 'react-icons/md';
 import { AlertDialogContent as ShadcnAlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@components/shadcn/alert-dialog';
 import { Button } from '@components/shadcn/button';
 
-import { useDots } from './hooks';
+import { useDots, useOpenShop } from './hooks';
 
 type AlertProps = {
     status: string;
@@ -15,6 +15,7 @@ type AlertProps = {
 
 export default function Alert({ status, setStatus, navigate }: AlertProps): JSX.Element {
     const dot: string = useDots();
+    const openShop: () => void = useOpenShop();
 
     if (status === 'loading') {
         return (
@@ -32,6 +33,22 @@ export default function Alert({ status, setStatus, navigate }: AlertProps): JSX.
                     navigate
                         ? <Link href="/video"><Button>Go to video</Button></Link>
                         : <Button onClick={() => setStatus('')}>Close</Button>
+                }
+            />
+        );
+    } else if (status === 'coin') {
+        return (
+            <AlertDialogContent
+                title={ <span className="flex items-center gap-2"><MdErrorOutline /> Oops</span> }
+                description={ <span>You don&apos;t have any coins</span> }
+                footer={
+                    <span className="flex items-center gap-2">
+                        <Button variant="ghost" onClick={() => setStatus('')}>Close</Button>
+                        <Button onClick={() => {
+                            setStatus('');
+                            openShop();
+                        }}>Purchase coins</Button>
+                    </span>
                 }
             />
         );
