@@ -53,6 +53,7 @@ export async function generate({ userId, insertedId, style, duration, storyboard
             codec: 'h264',
             outputLocation: videoPath,
             inputProps,
+            acknowledgeRemotionLicense: true,
         });
 
         if (fs.existsSync(videoPath)) {
