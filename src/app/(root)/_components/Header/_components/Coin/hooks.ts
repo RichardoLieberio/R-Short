@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useAppSelector, AppDispatch, useAppDispatch } from '@store';
-import { setCoin } from '@store/user';
+import { setCoin, setOpenShop } from '@store/user';
 import { getUserCoin } from './action';
 
 export function useCoin(): number | null {
@@ -17,4 +17,14 @@ export function useCoin(): number | null {
     }, [ coin, dispatch ]);
 
     return coin;
+}
+
+export function useOpenShop(): () => void {
+    const dispatch: AppDispatch = useAppDispatch();
+
+    function openShop(): void {
+        dispatch(setOpenShop(true));
+    }
+
+    return openShop;
 }
