@@ -38,7 +38,7 @@ export async function POST(req: Request): Promise<NextResponse> {
                 return insertedId;
             });
 
-            fetch(process.env.SERVICE_URI!, {
+            fetch(process.env.NEXT_PUBLIC_SERVICE_URI!, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, insertedId, style, duration, storyboard }),

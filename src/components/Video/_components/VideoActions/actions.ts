@@ -13,7 +13,7 @@ export async function deleteVideo(id: number): Promise<void> {
         .where(eq(Video.id, id))
         .returning({ path: Video.path });
 
-    fetch(process.env.SERVICE_URI!, {
+    fetch(process.env.NEXT_PUBLIC_SERVICE_URI!, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path }),
