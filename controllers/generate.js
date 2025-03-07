@@ -1,7 +1,6 @@
 import firebaseConfig from '../firebase.config.js';
 import path from 'path';
 import fs from 'fs';
-import mime from 'mime';
 
 import { v4 as uuidv4 } from 'uuid';
 import { initializeApp } from 'firebase/app';
@@ -46,7 +45,7 @@ export async function generate({ userId, insertedId, style, duration, storyboard
         const inputProps = { video, durations };
         const composition = await selectComposition({ serveUrl: bundleLocation, id: 'composition', inputProps });
 
-        const videoPath = path.join(process.cwd(), 'temp', id, 'video.mp4');
+        const videoPath = path.join(process.cwd(), 'temp', uuid, 'video.mp4');
 
         await renderMedia({
             composition,
@@ -56,10 +55,10 @@ export async function generate({ userId, insertedId, style, duration, storyboard
             inputProps,
         });
 
-        if (fs.existsSync(videoPath) && mime.getType(videoPath).startsWith('video/')) {
+        if (fs.existsSync(videoPath)) {
             const app = initializeApp(firebaseConfig);
             const storage = getStorage(app);
-            const storageRef = ref(storage, id + '.mp4');
+            const storageRef = ref(storage, uuid + '.mp4');
 
             const videoBuffer = fs.readFileSync(videoPath);
             const metadata = { contentType: 'video/mp4' };
