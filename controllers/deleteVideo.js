@@ -1,19 +1,17 @@
 import storage from '../firebase.js';
-import { deleteObject, listAll } from 'firebase/storage';
+import { ref, deleteObject, listAll } from 'firebase/storage';
 
-export async function deleteVideo(req, res) {
-    const folder = req.body.folder;
-
+export async function deleteVideo(folder, includeVideo = false) {
     if (folder) {
         const audioRef = ref(storage, folder + '/Audio/');
         const imageRef = ref(storage, folder + '/Image/');
-        const videoRef = ref(storage, folder + '/video.mp4');
+        const videoRef = ref(storage, folder + '.mp4');
 
         try {
             await Promise.all([
                 clearFolder(audioRef),
                 clearFolder(imageRef),
-                deleteObject(videoRef),
+                includeVideo && deleteObject(videoRef),
             ]);
         } catch (error) {
             console.error('Failed to delete folder:', error);

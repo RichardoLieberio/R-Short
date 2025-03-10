@@ -51,11 +51,15 @@ app.post('/', async (req, res) => {
 
 app.patch('/', async (req, res) => {
     const { userId, videoId } = req.body;
-    const rendered = await render(userId, videoId);
-    if (rendered) io.to(userId).emit('generate:rendered', { videoId });
+    const path = await render(userId, videoId);
+
+    if (path) {
+        io.to(userId).emit('generate:rendered', { videoId, path });
+        res.json({ path });
+    }
 });
 
-app.delete('/', deleteVideo);
+app.delete('/', (req, res) => deleteVideo(req.body.folder, true));
 
 server.listen(process.env.PORT, () => {
     console.log(`Server running on port ${process.env.PORT}`);

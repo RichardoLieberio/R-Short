@@ -125,7 +125,7 @@ async function generateTranscript(id, contents) {
 async function generateImages(id, contents) {
     const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN, useFileOutput: false });
 
-    const result = await Promise.all(contents.map(async ({ imagePrompt }) => {
+    const result = await Promise.all(contents.map(async ({ imagePrompt }, index) => {
         const input = {
             width: 800,
             height: 1200,
