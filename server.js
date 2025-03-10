@@ -3,6 +3,7 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { generate } from './controllers/generate.js';
+import { render } from './controllers/render.js';
 import { deleteVideo } from './controllers/deleteVideo.js';
 
 const app = express();
@@ -17,7 +18,6 @@ const io = new Server(server, {
 });
 
 app.use(express.json());
-app.use(express.static('temp'));
 
 io.use((socket, next) => {
     const userId = socket.handshake.auth.userId;
@@ -38,10 +38,21 @@ app.post('/', async (req, res) => {
 
     io.to(userId).emit('generate:pending', { videoId: insertedId });
 
-    const path = await generate({ userId, insertedId, style, duration, storyboard });
+    const result = await generate({ userId, insertedId, style, duration, storyboard });
 
-    if (path) io.to(userId).emit('generate:success', { videoId: insertedId, path });
-    else io.to(userId).emit('generate:failed', { videoId: insertedId });
+    if (result) {
+        io.to(userId).emit('generate:success', { videoId: insertedId, ...result });
+        const rendered = await render(userId, insertedId);
+        if (rendered) io.to(userId).emit('generate:rendered', { videoId: insertedId });
+    } else {
+        io.to(userId).emit('generate:failed', { videoId: insertedId });
+    }
+});
+
+app.patch('/', async (req, res) => {
+    const { userId, videoId } = req.body;
+    const rendered = await render(userId, videoId);
+    if (rendered) io.to(userId).emit('generate:rendered', { videoId });
 });
 
 app.delete('/', deleteVideo);

@@ -1,14 +1,27 @@
-import firebaseConfig from '../firebase.config.js';
-import { initializeApp } from 'firebase/app';
-import { getStorage, ref, deleteObject } from 'firebase/storage';
+import storage from '../firebase.js';
+import { deleteObject, listAll } from 'firebase/storage';
 
 export async function deleteVideo(req, res) {
-    const path = req.body.path?.split('/o/')[1]?.split('?')[0];
+    const folder = req.body.folder;
 
-    if (path) {
-        const app = initializeApp(firebaseConfig);
-        const storage = getStorage(app);
-        const fileRef = ref(storage, path);
-        await deleteObject(fileRef);
+    if (folder) {
+        const audioRef = ref(storage, folder + '/Audio/');
+        const imageRef = ref(storage, folder + '/Image/');
+        const videoRef = ref(storage, folder + '/video.mp4');
+
+        try {
+            await Promise.all([
+                clearFolder(audioRef),
+                clearFolder(imageRef),
+                deleteObject(videoRef),
+            ]);
+        } catch (error) {
+            console.error('Failed to delete folder:', error);
+        }
     }
+}
+
+async function clearFolder(folderRef) {
+    const { items } = await listAll(folderRef);
+    await Promise.all(items.map(fileRef => deleteObject(fileRef)));
 }

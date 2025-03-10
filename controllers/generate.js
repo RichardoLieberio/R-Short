@@ -1,10 +1,7 @@
-import firebaseConfig from '../firebase.config.js';
-import path from 'path';
-import fs from 'fs';
+import storage from '../firebase.js';
 
 import { v4 as uuidv4 } from 'uuid';
-import { initializeApp } from 'firebase/app';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import textToSpeech from '@google-cloud/text-to-speech';
 import { AssemblyAI } from 'assemblyai';
@@ -13,19 +10,15 @@ import Replicate from 'replicate';
 import { eq, and, sql } from 'drizzle-orm';
 import { db, User, Video } from '../database/index.js';
 
-import { bundle } from '@remotion/bundler';
-import { renderMedia, selectComposition } from '@remotion/renderer';
-
 export async function generate({ userId, insertedId, style, duration, storyboard }) {
     const uuid = uuidv4();
-    const folder = path.join(process.cwd(), 'temp', uuid);
 
     try {
         const prompt = `Write a script and AI image prompt in ${style.toLowerCase()} format for each scene to generate a ${duration} second video based on the following storyboard:\n\n\"\"\"\n${storyboard}\n\"\"\"\n\nThe output should be provided in JSON format with imagePrompt and contentText as fields.`;
 
         const contents = await generateContent(prompt);
 
-        const video = await Promise.all([ generateTranscript(uuid, contents), generateImages(contents) ])
+        const result = await Promise.all([ generateTranscript(uuid, contents), generateImages(uuid, contents) ])
             .then(([ transcripts, images ]) => {
                 const audioUris = [];
                 const imageUris = [];
@@ -37,45 +30,15 @@ export async function generate({ userId, insertedId, style, duration, storyboard
                     captions.push(transcripts[i].words);
                 }
 
-                return { audioUris, imageUris, captions };
+                return { audio_uri: JSON.stringify(audioUris), image_uri: JSON.stringify(imageUris), captions: JSON.stringify(captions) };
             });
 
-        const bundleLocation = await bundle({ entryPoint: path.resolve('./remotion/index.js') });
-        const durations = video.captions.map((captions) => Math.ceil((captions.at(-1).end / 1000) * 30 + 15));
-        const inputProps = { video, durations };
-        const composition = await selectComposition({ serveUrl: bundleLocation, id: 'composition', inputProps });
+        const newData = { folder: uuid, ...result, status: 'created' };
+        await db.update(Video).set(newData).where(eq(Video.id, insertedId));
 
-        const videoPath = path.join(process.cwd(), 'temp', uuid, 'video.mp4');
-
-        await renderMedia({
-            composition,
-            serveUrl: bundleLocation,
-            codec: 'h264',
-            outputLocation: videoPath,
-            inputProps,
-            acknowledgeRemotionLicense: true,
-        });
-
-        if (fs.existsSync(videoPath)) {
-            const app = initializeApp(firebaseConfig);
-            const storage = getStorage(app);
-            const storageRef = ref(storage, uuid + '.mp4');
-
-            const videoBuffer = fs.readFileSync(videoPath);
-            const metadata = { contentType: 'video/mp4' };
-            await uploadBytes(storageRef, videoBuffer, metadata);
-
-            const downloadUri = await getDownloadURL(storageRef);
-            await db.update(Video).set({ status: 'created', path: downloadUri }).where(eq(Video.id, insertedId));
-            fs.rmSync(folder, { recursive: true, force: true });
-
-            return downloadUri;
-        } else {
-            throw new Error('Failed to generate video');
-        }
+        return newData;
     } catch (error) {
         console.error(error);
-        fs.rmSync(folder, { recursive: true, force: true });
 
         await db.transaction(async (tx) => {
             await Promise.all([
@@ -83,6 +46,7 @@ export async function generate({ userId, insertedId, style, duration, storyboard
                 tx.update(User).set({ coin: sql`${User.coin} + 1` }).where(and(eq(User.clerk_id, userId), eq(User.role, 'user'))),
             ]);
         });
+
         return null;
     }
 }
@@ -131,7 +95,6 @@ async function generateContent(prompt) {
 async function generateTranscript(id, contents) {
     const textToSpeechClient = new textToSpeech.TextToSpeechClient({ apiKey: process.env.FIREBASE_API_KEY });
     const assemblyClient = new AssemblyAI({ apiKey: process.env.ASSEMBLY_AI_API_KEY });
-    const folder = path.join(process.cwd(), 'temp', id, 'Audios');
 
     const result = await Promise.all(contents.map(async ({ contentText }, index) => {
         const request = {
@@ -145,12 +108,12 @@ async function generateTranscript(id, contents) {
 
         if (!audioBuffer) throw new Error('Failed to generate audio');
 
-        fs.mkdirSync(folder, { recursive: true });
+        const audioRef = ref(storage, `${id}/Audio/${index + 1}.mp3`);
+        await uploadBytes(audioRef, audioBuffer);
 
-        const audioUri = path.join(folder, index + '.mp3');
-        fs.writeFileSync(audioUri, audioBuffer);
+        const audioUrl = await getDownloadURL(audioRef);
 
-        const assemblyConfig = { audio_url: `${process.env.SERVICE_URI}/${id}/Audios/${index}.mp3` };
+        const assemblyConfig = { audio_url: audioUrl };
         const transcript = await assemblyClient.transcripts.transcribe(assemblyConfig);
 
         return transcript;
@@ -159,7 +122,7 @@ async function generateTranscript(id, contents) {
     return result;
 }
 
-async function generateImages(contents) {
+async function generateImages(id, contents) {
     const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN, useFileOutput: false });
 
     const result = await Promise.all(contents.map(async ({ imagePrompt }) => {
@@ -178,7 +141,16 @@ async function generateImages(contents) {
 
         if (!object) throw new Error('Failed to generate image');
 
-        return object;
+        const response = await fetch(object);
+        if (!response.ok) throw new Error('Failed to fetch generated image');
+
+        const imageRef = ref(storage, `${id}/Image/${index + 1}.png`);
+        const blob = await response.blob();
+        await uploadBytes(imageRef, blob);
+
+        const imageUri = await getDownloadURL(imageRef);
+
+        return imageUri;
     }));
 
     return result;
