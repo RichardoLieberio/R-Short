@@ -3,7 +3,7 @@ import { useState, Dispatch, SetStateAction } from 'react';
 import { useAppSelector, useAppDispatch, AppDispatch } from '@store';
 import { reduceCoin, addProcess, removeProcess } from '@store/user';
 
-import { fetchVideo, deleteVideo } from './actions';
+import { fetchVideo, renderVideo, deleteVideo } from './actions';
 
 import { useVideoActionsReturn } from './types';
 import { VideoType } from '../../types';
@@ -41,20 +41,25 @@ export function useVideoActions(video: VideoType | undefined): useVideoActionsRe
     }
 
     async function downloadVideo(): Promise<void> {
-        if (video && video.path && !processing[video.id]) {
+        if (video && !processing[video.id]) {
             dispatch(addProcess({ id: video.id, type: 'download' }));
 
-            const blob: Blob = await fetchVideo(video.path);
-            const url: string = window.URL.createObjectURL(blob);
+            const path: string | void = video.path ?? await renderVideo(video.id);
 
-            const anchor: HTMLAnchorElement = document.createElement('a');
-            anchor.href = url;
-            anchor.download = `video-${video.id}.mp4`;
-            document.body.appendChild(anchor);
-            anchor.click();
-            document.body.removeChild(anchor);
+            if (path) {
+                const blob: Blob = await fetchVideo(path);
+                const url: string = window.URL.createObjectURL(blob);
 
-            window.URL.revokeObjectURL(url);
+                const anchor: HTMLAnchorElement = document.createElement('a');
+                anchor.href = url;
+                anchor.download = `video-${video.id}.mp4`;
+                document.body.appendChild(anchor);
+                anchor.click();
+                document.body.removeChild(anchor);
+
+                window.URL.revokeObjectURL(url);
+            }
+
             dispatch(removeProcess(video.id));
         }
     }

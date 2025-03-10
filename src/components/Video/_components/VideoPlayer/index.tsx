@@ -9,6 +9,7 @@ import MoonLoader from 'react-spinners/MoonLoader';
 import { MdErrorOutline } from 'react-icons/md';
 import { CiWarning } from 'react-icons/ci';
 import Skeleton from '@components/Skeleton';
+import Video from '../Video';
 
 import { usePlayer } from './hooks';
 
@@ -22,7 +23,7 @@ type VideoPlayerProps = {
 };
 
 export default function VideoPlayer({ videoNotFound, video, small }: VideoPlayerProps): JSX.Element {
-    const { height, durationInFrames, error }: usePlayerReturn = usePlayer(video?.path ?? '', small);
+    const { height, durationInFrames, error }: usePlayerReturn = usePlayer(video, small);
 
     const widthPx: string = `${(height * 2 / 3).toString()}px`;
     const heightPx: string = `${height.toString()}px`;
@@ -64,7 +65,7 @@ export default function VideoPlayer({ videoNotFound, video, small }: VideoPlayer
         </div>
     );
 
-    return (
+    if (video.status === 'generated') return (
         <Player
             component={OffthreadVideo}
             compositionWidth={Math.round(height * 2 / 3)}
@@ -73,6 +74,20 @@ export default function VideoPlayer({ videoNotFound, video, small }: VideoPlayer
             fps={30}
             controls
             inputProps={{ src: video.path!, pauseWhenBuffering: true, className: 'bg-black' }}
+            acknowledgeRemotionLicense
+        />
+    );
+
+    return (
+        <Player
+            component={Video}
+            compositionWidth={Math.round(height * 2 / 3)}
+            compositionHeight={Math.round(height)}
+            durationInFrames={durationInFrames}
+            fps={30}
+            controls
+            inputProps={{ video, height: Math.round(height) }}
+            acknowledgeRemotionLicense
         />
     );
 }
