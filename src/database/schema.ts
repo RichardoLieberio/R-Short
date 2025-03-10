@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/typedef */
 
-import { pgTable, integer, varchar, timestamp, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, integer, varchar, timestamp, pgEnum, json } from 'drizzle-orm/pg-core';
 
 export const Package = pgTable('packages', {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -19,7 +19,7 @@ export const User = pgTable('users', {
     created_at: timestamp().notNull().defaultNow(),
 });
 
-const videoStatusEnum = pgEnum('status', [ 'pending', 'created', 'failed' ]);
+const videoStatusEnum = pgEnum('status', [ 'pending', 'generated', 'created', 'failed' ]);
 const videoDurationEnum = pgEnum('duration', [ '15', '30', '60' ]);
 export const Video = pgTable('videos', {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -29,6 +29,10 @@ export const Video = pgTable('videos', {
     duration: videoDurationEnum().notNull(),
     storyboard: varchar().notNull(),
     path: varchar().unique(),
+    folder: varchar({ length: 50 }).unique(),
+    audio_uri: json(),
+    image_uri: json(),
+    captions: json(),
     created_at: timestamp().notNull().defaultNow(),
 });
 
