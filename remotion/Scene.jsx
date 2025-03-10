@@ -15,7 +15,7 @@ export default function Scene({ scale, imageUri, audioUri, captions }) {
 
                     return (
                         <Sequence key={idx} from={startTime} durationInFrames={duration}>
-                            <div style={{ fontFamily, width: '100%', position: 'absolute', bottom: '224px', color: 'white', textAlign: 'center', fontSize: '64px', lineHeight: '32px', textShadow: '2px 2px 2px rgba(0, 0, 0, 1)' }}>
+                            <div style={{ fontFamily, width: '100%', position: 'absolute', bottom: '20%', color: 'white', textAlign: 'center', fontSize: '60px', textShadow: '2px 2px 2px rgba(0, 0, 0, 1)' }}>
                                 {caption.text}
                             </div>
                         </Sequence>
