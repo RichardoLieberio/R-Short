@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, integer, varchar, timestamp } from 'drizzle-orm/pg-core';
+import { pgEnum, pgTable, integer, varchar, timestamp, json } from 'drizzle-orm/pg-core';
 
 const userRoleEnum = pgEnum('user_role', [ 'user', 'admin' ]);
 export const User = pgTable('users', {
@@ -10,7 +10,7 @@ export const User = pgTable('users', {
     created_at: timestamp().notNull().defaultNow(),
 });
 
-const videoStatusEnum = pgEnum('status', [ 'pending', 'created', 'failed' ]);
+const videoStatusEnum = pgEnum('status', [ 'pending', 'generated', 'created', 'failed' ]);
 const videoDurationEnum = pgEnum('duration', [ '15', '30', '60' ]);
 export const Video = pgTable('videos', {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -19,6 +19,9 @@ export const Video = pgTable('videos', {
     style: varchar({ length: 30 }).notNull(),
     duration: videoDurationEnum().notNull(),
     storyboard: varchar().notNull(),
-    path: varchar().unique(),
+    folder: varchar({ length: 50 }).unique(),
+    audio_uri: json(),
+    image_uri: json(),
+    captions: json(),
     created_at: timestamp().notNull().defaultNow(),
 });
