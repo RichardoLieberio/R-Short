@@ -26,10 +26,20 @@ export function useVideoContainer(videos: videoPreviewType[]): useVideoContainer
                 }
             });
 
-            socket.on('generate:success', ({ videoId, path }: { videoId: number, path: string }) => {
+            socket.on('generate:rendered', ({ videoId, path }: { videoId: number, path: string }) => {
                 if (renderVideos.find((video) => video.id === videoId)) {
                     const newVideos: videoPreviewType[] = renderVideos.map((video) => {
-                        if (video.id === videoId) return { id: video.id, status: 'created', path };
+                        if (video.id === videoId) return { id: video.id, status: 'generated', path, imageUri: null };
+                        return video;
+                    });
+                    setRenderVideos(newVideos);
+                }
+            });
+
+            socket.on('generate:success', ({ videoId, image_uri }: { videoId: number, image_uri: string }) => {
+                if (renderVideos.find((video) => video.id === videoId)) {
+                    const newVideos: videoPreviewType[] = renderVideos.map((video) => {
+                        if (video.id === videoId) return { id: video.id, status: 'created', path: null, imageUri: JSON.parse(image_uri)[0] };
                         return video;
                     });
                     setRenderVideos(newVideos);

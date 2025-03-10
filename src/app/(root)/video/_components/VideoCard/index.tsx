@@ -1,5 +1,6 @@
 import { JSX } from 'react';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { FaPlay } from 'react-icons/fa';
@@ -27,8 +28,16 @@ export default function VideoCard({ video, lastVideo }: VideoCardProps ): JSX.El
                     </div>
                 }
                 {
-                    video.status === 'created' && <>
+                    video.status === 'generated' && <>
                         <Thumbnail component={OffthreadVideo} compositionWidth={128} compositionHeight={192} frameToDisplay={1} durationInFrames={30} fps={30} inputProps={{ src: video.path!, pauseWhenBuffering: true }} className="transition-all duration-300 group-hover:brightness-50" />
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <FaPlay className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl" />
+                        </div>
+                    </>
+                }
+                {
+                    video.status === 'created' && <>
+                        <Image src={video.imageUri!} alt="Thumbnail" width="128" height="192" unoptimized className="transition-all duration-300 group-hover:brightness-50" />
                         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                             <FaPlay className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl" />
                         </div>

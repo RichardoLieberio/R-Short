@@ -5,6 +5,7 @@ export type getVideosReturn = {
 
 export type videoPreviewType = {
     id: number;
-    status: 'pending' | 'created' | 'failed';
+    status: 'pending' | 'generated' | 'created' | 'failed';
     path: string | null;
+    imageUri: string | null;
 };
