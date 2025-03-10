@@ -42,8 +42,8 @@ app.post('/', async (req, res) => {
 
     if (result) {
         io.to(userId).emit('generate:success', { videoId: insertedId, ...result });
-        const rendered = await render(userId, insertedId);
-        if (rendered) io.to(userId).emit('generate:rendered', { videoId: insertedId });
+        const path = await render(userId, insertedId);
+        if (path) io.to(userId).emit('generate:rendered', { videoId: insertedId, path });
     } else {
         io.to(userId).emit('generate:failed', { videoId: insertedId });
     }

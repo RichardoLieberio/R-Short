@@ -19,6 +19,7 @@ export const Video = pgTable('videos', {
     style: varchar({ length: 30 }).notNull(),
     duration: videoDurationEnum().notNull(),
     storyboard: varchar().notNull(),
+    path: varchar().unique(),
     folder: varchar({ length: 50 }).unique(),
     audio_uri: json(),
     image_uri: json(),

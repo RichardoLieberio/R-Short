@@ -4,7 +4,7 @@ import storage from '../firebase.js';
 
 import { bundle } from '@remotion/bundler';
 import { renderMedia, selectComposition } from '@remotion/renderer';
-import { ref, uploadBytes } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 import { eq, and } from 'drizzle-orm';
 import { db, User, Video } from '../database/index.js';
@@ -44,10 +44,12 @@ export async function render(userId, videoId) {
             const metadata = { contentType: 'video/mp4' };
             await uploadBytes(storageRef, videoBuffer, metadata);
 
-            await db.update(Video).set({ status: 'generated', audio_uri: null, image_uri: null, captions: null }).where(eq(Video.id, videoId));
+            const path = await getDownloadURL(storageRef);
+
+            await db.update(Video).set({ status: 'generated', path, folder: null, audio_uri: null, image_uri: null, captions: null }).where(eq(Video.id, videoId));
             fs.unlinkSync(videoPath);
 
-            return true;
+            return path;
         } else {
             throw new Error('Failed to generate video');
         }
