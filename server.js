@@ -59,7 +59,7 @@ app.patch('/', async (req, res) => {
     }
 });
 
-app.delete('/', (req, res) => deleteVideo(req.body.folder, true));
+app.delete('/', (req, res) => deleteVideo(req.body.path, req.body.folder));
 
 server.listen(process.env.PORT, () => {
     console.log(`Server running on port ${process.env.PORT}`);

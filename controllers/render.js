@@ -47,7 +47,7 @@ export async function render(userId, videoId) {
             await db.update(Video).set({ status: 'generated', path, folder: null, audio_uri: null, image_uri: null, captions: null }).where(eq(Video.id, videoId));
 
             fs.unlinkSync(videoPath);
-            deleteVideo(video.folder);
+            deleteVideo(undefined, video.folder);
 
             return path;
         } else {

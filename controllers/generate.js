@@ -10,6 +10,8 @@ import Replicate from 'replicate';
 import { eq, and, sql } from 'drizzle-orm';
 import { db, User, Video } from '../database/index.js';
 
+import { deleteVideo } from './deleteVideo.js';
+
 export async function generate({ userId, insertedId, style, duration, storyboard }) {
     const uuid = uuidv4();
 
@@ -46,6 +48,8 @@ export async function generate({ userId, insertedId, style, duration, storyboard
                 tx.update(User).set({ coin: sql`${User.coin} + 1` }).where(and(eq(User.clerk_id, userId), eq(User.role, 'user'))),
             ]);
         });
+
+        deleteVideo(undefined, uuid);
 
         return null;
     }
