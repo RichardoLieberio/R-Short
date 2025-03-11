@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createRouteMatcher, clerkMiddleware, ClerkMiddlewareAuth, ClerkMiddlewareAuthObject } from '@clerk/nextjs/server';
 
 type routeType = (req: NextRequest) => boolean;
-const isPublicRoute: routeType = createRouteMatcher([ '/', '/register(.*)', '/login(.*)' ]);
+const isPublicRoute: routeType = createRouteMatcher([ '/', '/register(.*)', '/login(.*)', '/api/payment/success' ]);
 const isAdminRoute: routeType = createRouteMatcher([ '/admin(.*)' ]);
 
 export default clerkMiddleware(async function (auth: ClerkMiddlewareAuth, request: NextRequest): Promise<NextResponse | void> {
