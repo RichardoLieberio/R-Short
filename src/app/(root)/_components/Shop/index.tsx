@@ -4,7 +4,7 @@ import CoinCard from './_components/CoinCard';
 import { packageType } from './types';
 
 export default async function Shop(): Promise<JSX.Element> {
-    const packages: packageType[] = await db.select({ id: Package.id, coin: Package.coin, normalPrice: Package.normal_price, finalPrice: Package.final_price }).from(Package);
+    const packages: packageType[] = await db.select({ id: Package.id, coin: Package.coin, normalPrice: Package.normal_price, finalPrice: Package.final_price }).from(Package).orderBy(Package.id);
 
     return (
         <div className="flex flex-col md:flex-row gap-4">
