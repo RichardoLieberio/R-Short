@@ -22,6 +22,10 @@ export const faqs: faqsType[] = [
         answer: 'No, all AI-generated videos are watermark-free, ensuring a clean and professional look.',
     },
     {
+        question: 'Can I download videos?',
+        answer: 'Yes, you can download videos. However, it may take some time for the video to be processed and rendered before it becomes available for download. Please be patient while the system prepares your file.',
+    },
+    {
         question: 'What payment methods are accepted?',
         answer: 'We accept credit/debit cards and local Indonesian bank payment options.',
     },
