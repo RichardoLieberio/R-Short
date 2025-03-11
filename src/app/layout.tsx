@@ -10,6 +10,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import SocketProvider from '@components/SocketProvider';
 import ClerkAuth from './_components/ClerkAuth';
 import StoreProvider from './_components/StoreProvider';
+import VideoRenderer from './_components/VideoRenderer';
 import Script from 'next/script';
 
 const dmSans: NextFont = DM_Sans({
@@ -23,12 +24,14 @@ export default function RootLayout({ children }: { children: ReactNode }): JSX.E
             <ClerkAuth>
                 <StoreProvider>
                     <SocketProvider>
-                        <html lang="en">
-                            <Script src="https://app.sandbox.midtrans.com/snap/snap.js" key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY} />
-                            <body className={`${dmSans.className} w-full min-w-80 h-dvh relative text-sm md:text-base text-foreground bg-background overflow-x-hidden`}>
-                                { children }
-                            </body>
-                        </html>
+                        <VideoRenderer>
+                            <html lang="en">
+                                <Script src="https://app.sandbox.midtrans.com/snap/snap.js" key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY} />
+                                <body className={`${dmSans.className} w-full min-w-80 h-dvh relative text-sm md:text-base text-foreground bg-background overflow-x-hidden`}>
+                                    { children }
+                                </body>
+                            </html>
+                        </VideoRenderer>
                     </SocketProvider>
                 </StoreProvider>
             </ClerkAuth>
