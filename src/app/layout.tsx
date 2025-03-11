@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: ReactNode }): JSX.E
                     <SocketProvider>
                         <VideoRenderer>
                             <html lang="en">
-                                <Script src="https://app.sandbox.midtrans.com/snap/snap.js" key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY} />
+                                <Script src={process.env.MODE === 'development' ? 'https://app.sandbox.midtrans.com/snap/snap.js' : 'https://app.midtrans.com/snap/snap.js'} key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY} />
                                 <body className={`${dmSans.className} w-full min-w-80 h-dvh relative text-sm md:text-base text-foreground bg-background overflow-x-hidden`}>
                                     { children }
                                 </body>

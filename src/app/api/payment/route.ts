@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server';
+import { auth, ClerkMiddlewareAuthObject } from '@clerk/nextjs/server';
 import Midtrans from 'midtrans-client-typescript';
 import { Snap } from 'midtrans-client-typescript/lib/snap';
 import { eq } from 'drizzle-orm';
-import { db, Package } from '@database';
+import { db, User, Package, Transaction } from '@database';
 
 export async function POST(req: Request): Promise<NextResponse> {
+    const { userId: clerkId }: ClerkMiddlewareAuthObject = await auth();
+    if (!clerkId) return NextResponse.json({ message: 'You are not authenticated' }, { status: 401 });
+
+    const { userId }: { userId?: number } = await db.select({ userId: User.id }).from(User).where(eq(User.clerk_id, clerkId)).then((result) => result[0] || {});
+    if (!userId) return NextResponse.json({ message: 'You are not authenticated' }, { status: 401 });
+
     const { packageId }: { packageId: number | undefined } = await req.json() || {};
     if (!packageId) return NextResponse.json({ message: 'Package Id is required' }, { status: 429 });
 
@@ -51,9 +58,10 @@ export async function POST(req: Request): Promise<NextResponse> {
         },
     };
 
+    const orderId: string = generateOrderId();
     const parameter: parameterType = {
         transaction_details: {
-            order_id: generateOrderId(),
+            order_id: orderId,
             gross_amount: pkg.finalPrice,
         },
         item_details: [
@@ -77,6 +85,8 @@ export async function POST(req: Request): Promise<NextResponse> {
     };
 
     const token: string = await snap.createTransactionToken(parameter);
+
+    await db.insert(Transaction).values({ user_id: userId, package_id: pkg.id, order_id: orderId, amount: pkg.finalPrice });
 
     return NextResponse.json({ token }, { status: 200 });
 }

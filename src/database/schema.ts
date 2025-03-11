@@ -45,5 +45,6 @@ export const Transaction = pgTable('transactions', {
     transaction_id: varchar({ length: 50 }).unique(),
     amount: integer().notNull(),
     status: transactionStatusEnum().notNull().default('pending'),
+    transaction_time: timestamp(),
     created_at: timestamp().notNull().defaultNow(),
 });
