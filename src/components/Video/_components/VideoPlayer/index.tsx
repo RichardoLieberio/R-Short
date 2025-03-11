@@ -23,7 +23,7 @@ type VideoPlayerProps = {
 };
 
 export default function VideoPlayer({ videoNotFound, video, small }: VideoPlayerProps): JSX.Element {
-    const { height, durationInFrames, error }: usePlayerReturn = usePlayer(video, small);
+    const { height, durationInFrames, imagesLoaded, error }: usePlayerReturn = usePlayer(video, small);
 
     const widthPx: string = `${(height * 2 / 3).toString()}px`;
     const heightPx: string = `${height.toString()}px`;
@@ -59,7 +59,7 @@ export default function VideoPlayer({ videoNotFound, video, small }: VideoPlayer
         </div>
     );
 
-    if (!durationInFrames) return (
+    if (!durationInFrames || (video.status === 'created' && !imagesLoaded)) return (
         <div style={{ width: widthPx, height: heightPx }} className="px-4 flex flex-col items-center justify-center bg-black">
             <MoonLoader size={20} color="#ffffff" speedMultiplier={0.8} />
         </div>

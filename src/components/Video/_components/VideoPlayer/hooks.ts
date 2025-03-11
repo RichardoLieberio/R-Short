@@ -12,6 +12,7 @@ export function usePlayer(video: VideoType | undefined, small: boolean): usePlay
 
     const [ height, setHeight ]: [ number, Dispatch<SetStateAction<number>> ] = useState(getHeight());
     const [ durationInFrames, setDurationInFrames ]: [ number, Dispatch<SetStateAction<number>> ] = useState(0);
+    const [ imagesLoaded, setImagesLoaded ]: [ boolean, Dispatch<SetStateAction<boolean>> ] = useState(false);
     const [ error, setError ]: [ boolean, Dispatch<SetStateAction<boolean>> ] = useState(false);
 
     useEffect(() => {
@@ -22,8 +23,20 @@ export function usePlayer(video: VideoType | undefined, small: boolean): usePlay
                     if (duration) setDurationInFrames(duration);
                     else setError(true);
                 } else if (video.status === 'created') {
+                    setImagesLoaded(false);
+
                     const duration: number = video.captions!.reduce((duration, captions) => duration + Math.ceil((captions.at(-1)!.end / 1000) * 30 + 15), 0);
                     setDurationInFrames(duration);
+
+                    await Promise.all(video.imageUris!.map((imageUri) => {
+                        return new Promise((resolve) => {
+                            const img: HTMLImageElement = new Image();
+                            img.src = imageUri;
+                            img.onload = (): void => resolve(true);
+                        });
+                    }));
+
+                    setImagesLoaded(true);
                 }
             }
         }
@@ -43,5 +56,5 @@ export function usePlayer(video: VideoType | undefined, small: boolean): usePlay
         };
     }, [ getHeight ]);
 
-    return { height, durationInFrames, error };
+    return { height, durationInFrames, imagesLoaded, error };
 }
