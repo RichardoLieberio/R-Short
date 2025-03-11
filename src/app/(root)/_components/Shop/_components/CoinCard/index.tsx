@@ -9,7 +9,7 @@ import { useCoinCardReturn } from './types';
 import { packageType } from '../../types';
 
 export default function CoinCard({ pkg }: { pkg: packageType }): JSX.Element {
-    const { rupiahFormat, handlePurchase }: useCoinCardReturn = useCoinCard();
+    const { handlingPurchase, rupiahFormat, handlePurchase }: useCoinCardReturn = useCoinCard();
 
     return (
         <Card key={`Coin-${pkg.id}`} className="w-auto md:w-48 p-2 md:p-4 flex flex-row md:flex-col items-center gap-4">
@@ -26,7 +26,7 @@ export default function CoinCard({ pkg }: { pkg: packageType }): JSX.Element {
                 </CardContent>
             </div>
             <CardFooter className="p-0 md:w-full">
-                <Button onClick={() => handlePurchase(pkg.id)} className="md:w-full">Purchase</Button>
+                <Button onClick={() => handlePurchase(pkg.id)} disabled={handlingPurchase} className="md:w-full">Purchase</Button>
             </CardFooter>
         </Card>
     );

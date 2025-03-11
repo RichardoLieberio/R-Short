@@ -6,12 +6,14 @@ type initialStateType = {
     coin: number | null;
     processing: { [ id: number ]: string };
     openShop: boolean;
+    handlingPurchase: boolean;
 };
 
 const initialState: initialStateType = {
     coin: null,
     processing: {},
     openShop: false,
+    handlingPurchase: false,
 };
 
 export const userSlice = createSlice({
@@ -33,8 +35,11 @@ export const userSlice = createSlice({
         setOpenShop: (state, action: PayloadAction<boolean>) => {
             state.openShop = action.payload;
         },
+        setHandlingPurchase: (state, action: PayloadAction<boolean>) => {
+            state.handlingPurchase = action.payload;
+        },
     },
 });
 
-export const { setCoin, reduceCoin, addProcess, removeProcess, setOpenShop } = userSlice.actions;
+export const { setCoin, reduceCoin, addProcess, removeProcess, setOpenShop, setHandlingPurchase } = userSlice.actions;
 export default userSlice.reducer;
