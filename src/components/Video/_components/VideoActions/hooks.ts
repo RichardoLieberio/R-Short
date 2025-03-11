@@ -3,7 +3,7 @@ import { useState, Dispatch, SetStateAction } from 'react';
 import { useAppSelector, useAppDispatch, AppDispatch } from '@store';
 import { reduceCoin, addProcess, removeProcess } from '@store/user';
 
-import { fetchVideo, renderVideo, deleteVideo } from './actions';
+import { deleteVideo } from './actions';
 
 import { useVideoActionsReturn } from './types';
 import { VideoType } from '../../types';
@@ -43,23 +43,7 @@ export function useVideoActions(video: VideoType | undefined): useVideoActionsRe
     async function downloadVideo(): Promise<void> {
         if (video && !processing[video.id]) {
             dispatch(addProcess({ id: video.id, type: 'download' }));
-
-            const path: string | void = video.path ?? await renderVideo(video.id);
-
-            if (path) {
-                const blob: Blob = await fetchVideo(path);
-                const url: string = window.URL.createObjectURL(blob);
-
-                const anchor: HTMLAnchorElement = document.createElement('a');
-                anchor.href = url;
-                anchor.download = `video-${video.id}.mp4`;
-                document.body.appendChild(anchor);
-                anchor.click();
-                document.body.removeChild(anchor);
-
-                window.URL.revokeObjectURL(url);
-            }
-
+            if (video.path) window.location.href = `/api/download?id=${video.id}`;
             dispatch(removeProcess(video.id));
         }
     }
