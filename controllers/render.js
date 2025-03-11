@@ -12,19 +12,21 @@ import { db, User, Video } from '../database/index.js';
 import { deleteVideo } from './deleteVideo.js';
 
 export async function render(userId, videoId) {
-    try {
-        const video = await db.select({ folder: Video.folder, audioUris: Video.audio_uri, imageUris: Video.image_uri, captions: Video.captions})
-            .from(Video)
-            .innerJoin(User, eq(User.id, Video.user_id))
-            .where(and(eq(Video.id, videoId), eq(User.clerk_id, userId)))
-            .then((result) => result[0]);
+    const video = await db.select({ folder: Video.folder, audioUris: Video.audio_uri, imageUris: Video.image_uri, captions: Video.captions})
+        .from(Video)
+        .innerJoin(User, eq(User.id, Video.user_id))
+        .where(and(eq(Video.id, videoId), eq(Video.status, 'created'), eq(User.clerk_id, userId)))
+        .then((result) => result[0]);
 
+    if (!video) return null;
+
+    const videoPath = path.join(process.cwd(), 'temp', video.folder + '.mp4');
+
+    try {
         const bundleLocation = await bundle({ entryPoint: path.resolve('./remotion/index.js') });
         const durations = video.captions.map((captions) => Math.ceil((captions.at(-1).end / 1000) * 30 + 15));
         const inputProps = { video, durations };
         const composition = await selectComposition({ serveUrl: bundleLocation, id: 'composition', inputProps });
-
-        const videoPath = path.join(process.cwd(), 'temp', video.folder + '.mp4');
 
         await renderMedia({
             composition,
@@ -55,6 +57,10 @@ export async function render(userId, videoId) {
         }
     } catch (error) {
         console.error(error);
+
+        fs.unlinkSync(videoPath);
+        deleteVideo(undefined, video.folder);
+
         return null;
     }
 }

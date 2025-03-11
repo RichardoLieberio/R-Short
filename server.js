@@ -6,12 +6,14 @@ import { generate } from './controllers/generate.js';
 import { render } from './controllers/render.js';
 import { deleteVideo } from './controllers/deleteVideo.js';
 
+const queue = [];
+let isRendering = false;
+
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: process.env.CLIENT_URI,
-        methods: [ 'POST' ],
+        origin: '*',
         allowedHeaders: [ 'Authorization' ],
         credentials: true
     },
@@ -42,21 +44,18 @@ app.post('/', async (req, res) => {
 
     if (result) {
         io.to(userId).emit('generate:success', { videoId: insertedId, ...result });
-        const path = await render(userId, insertedId);
-        if (path) io.to(userId).emit('generate:rendered', { videoId: insertedId, path });
+
+        queue.push({ userId, videoId: insertedId });
+        addQueue();
     } else {
         io.to(userId).emit('generate:failed', { videoId: insertedId });
     }
 });
 
-app.patch('/', async (req, res) => {
+app.patch('/', (req, res) => {
     const { userId, videoId } = req.body;
-    const path = await render(userId, videoId);
-
-    if (path) {
-        io.to(userId).emit('generate:rendered', { videoId, path });
-        res.json({ path });
-    }
+    queue.push({ userId, videoId });
+    addQueue();
 });
 
 app.delete('/', (req, res) => deleteVideo(req.body.path, req.body.folder));
@@ -64,3 +63,22 @@ app.delete('/', (req, res) => deleteVideo(req.body.path, req.body.folder));
 server.listen(process.env.PORT, () => {
     console.log(`Server running on port ${process.env.PORT}`);
 });
+
+async function addQueue() {
+    if (isRendering) return;
+
+    isRendering = true;
+    const { userId, videoId } = queue.shift();
+
+    console.log(`Rendering video. Video Id: ${videoId}`);
+    const path = await render(userId, videoId);
+    if (path) {
+        io.to(userId).emit('generate:rendered', { videoId, path });
+        console.log(`Video rendered. Video Id: ${videoId}`);
+    } else {
+        console.log(`Video is rendered. Video Id: ${videoId}`);
+    }
+
+    isRendering = false;
+    if (queue.length) addQueue();
+}
