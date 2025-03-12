@@ -7,7 +7,7 @@ export function getSocket(userId: string | null | undefined): Socket | null {
         socket = io(process.env.NEXT_PUBLIC_SERVICE_URI!, { transports: [ 'websocket' ], auth: { userId } });
 
         socket.on('connect', () => {
-            console.log('Connected to socket service:', socket!.id);
+            console.log('Connected to socket service');
         });
 
         socket.on('disconnect', () => {

@@ -13,7 +13,6 @@ export function useRevenueChart(): useRevenueChartReturn {
                 setIsFetching(true);
 
                 const data: dataType[] | void = await fetchTransaction(type);
-                console.log(data);
                 setData(data);
 
                 setIsFetching(false);
