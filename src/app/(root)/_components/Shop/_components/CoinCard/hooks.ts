@@ -6,14 +6,6 @@ export function useCoinCard(): useCoinCardReturn {
     const handlingPurchase: boolean = useAppSelector((state) => state.user.handlingPurchase);
     const dispatch: AppDispatch = useAppDispatch();
 
-    function rupiahFormat(price: number): string {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0,
-        }).format(price);
-    }
-
     async function handlePurchase(packageId: number): Promise<void> {
         if (!handlingPurchase) {
             dispatch(setHandlingPurchase(true));
@@ -34,5 +26,5 @@ export function useCoinCard(): useCoinCardReturn {
         }
     }
 
-    return { handlingPurchase, rupiahFormat, handlePurchase };
+    return { handlingPurchase, handlePurchase };
 }
