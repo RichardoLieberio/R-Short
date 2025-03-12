@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/typedef */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 
 'use client';
