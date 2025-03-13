@@ -18,6 +18,7 @@ export function useUserTable(): useUserTableReturn {
     const [ users, setUsers ]: [ userType[], Dispatch<SetStateAction<userType[]>> ] = useState<userType[]>([]);
     const [ sorting, setSorting ]: [ SortingState, React.Dispatch<React.SetStateAction<SortingState>> ] = useState<SortingState>([]);
     const [ columnFilters, setColumnFilters ]: [ ColumnFiltersState, React.Dispatch<React.SetStateAction<ColumnFiltersState>> ] = useState<ColumnFiltersState>([]);
+    const [ adjustCoin, setAdjustCoin ]: [ { clerkId: string, email: string, coin: number } | boolean, Dispatch<SetStateAction<{ clerkId: string, email: string, coin: number } | boolean>> ] = useState<{ clerkId: string, email: string, coin: number } | boolean>(false);
 
     const dispatch: AppDispatch = useAppDispatch();
     const { userId }: { userId: string | null | undefined } = useAuth();
@@ -57,7 +58,7 @@ export function useUserTable(): useUserTableReturn {
                                     <RiAdminFill /> Make admin
                                 </DropdownMenuItem>
                         }
-                        <DropdownMenuItem><RiCoinFill /> Adjust coins</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setAdjustCoin({ clerkId: row.original.clerkId, email: row.getValue('email'), coin: row.getValue('coin') })} disabled={processingUser[row.original.clerkId] === 'coin'}><RiCoinFill /> Adjust coins</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             ),
@@ -140,5 +141,5 @@ export function useUserTable(): useUserTableReturn {
         }
     }
 
-    return { setUsers, table, columnsLength: columns.length };
+    return { setUsers, table, columnsLength: columns.length, adjustCoin, setAdjustCoin };
 }

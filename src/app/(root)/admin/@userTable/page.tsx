@@ -6,12 +6,13 @@ import { flexRender } from '@tanstack/react-table';
 import { Table, TableHeader, TableHead, TableRow, TableBody, TableCell } from '@components/shadcn/table';
 import { Input } from '@components/shadcn/input';
 import { MdRefresh } from 'react-icons/md';
+import AdjustCoinDialog from './_components/AdjustCoinDialog';
 
 import { useUserTable } from './hooks';
 import { useUserTableReturn } from './types';
 
 export default function UserTable(): JSX.Element {
-    const { setUsers, table, columnsLength }: useUserTableReturn = useUserTable();
+    const { setUsers, table, columnsLength, adjustCoin, setAdjustCoin }: useUserTableReturn = useUserTable();
 
     return (
         <div>
@@ -61,6 +62,7 @@ export default function UserTable(): JSX.Element {
                     </TableBody>
                 </Table>
             </main>
+            <AdjustCoinDialog setUsers={setUsers} adjustCoin={adjustCoin} setAdjustCoin={setAdjustCoin} />
         </div>
     );
 }
