@@ -13,7 +13,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: '*',
+        origin: process.env.CLIENT_URI,
         allowedHeaders: [ 'Authorization' ],
         credentials: true
     },
