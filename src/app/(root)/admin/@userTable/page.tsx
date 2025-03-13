@@ -5,6 +5,7 @@ import { JSX } from 'react';
 import { Input } from '@components/shadcn/input';
 import { MdRefresh } from 'react-icons/md';
 import UserDataTable from './_components/UserDataTable';
+import UserTablePagination from './_components/UserTablePagination';
 import AdjustCoinDialog from './_components/AdjustCoinDialog';
 
 import { useUserTable } from './hooks';
@@ -24,6 +25,9 @@ export default function UserTable(): JSX.Element {
             <main className="mt-4">
                 <UserDataTable table={table} columnsLength={columnsLength} />
             </main>
+            <footer className="mt-4">
+                <UserTablePagination table={table} />
+            </footer>
             <AdjustCoinDialog setUsers={setUsers} adjustCoin={adjustCoin} setAdjustCoin={setAdjustCoin} />
         </div>
     );
