@@ -7,6 +7,7 @@ type initialStateType = {
     processing: { [ id: number ]: string };
     openShop: boolean;
     handlingPurchase: boolean;
+    processingUser: { [ clerkId: string ]: string };
 };
 
 const initialState: initialStateType = {
@@ -14,6 +15,7 @@ const initialState: initialStateType = {
     processing: {},
     openShop: false,
     handlingPurchase: false,
+    processingUser: {},
 };
 
 export const userSlice = createSlice({
@@ -38,8 +40,14 @@ export const userSlice = createSlice({
         setHandlingPurchase: (state, action: PayloadAction<boolean>) => {
             state.handlingPurchase = action.payload;
         },
+        addUserProcess: (state, action: PayloadAction<{ clerkId: string, type: string }>) => {
+            state.processingUser[action.payload.clerkId] = action.payload.type;
+        },
+        removeUserProcess: (state, action: PayloadAction<string>) => {
+            delete state.processingUser[action.payload];
+        },
     },
 });
 
-export const { setCoin, reduceCoin, addProcess, removeProcess, setOpenShop, setHandlingPurchase } = userSlice.actions;
+export const { setCoin, reduceCoin, addProcess, removeProcess, setOpenShop, setHandlingPurchase, addUserProcess, removeUserProcess } = userSlice.actions;
 export default userSlice.reducer;

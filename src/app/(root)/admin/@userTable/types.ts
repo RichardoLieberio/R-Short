@@ -9,8 +9,14 @@ export type useUserTableReturn = {
 };
 
 export type userType = {
+    clerkId: string;
     email: string;
     role: 'admin' | 'user';
     coin: number;
     createdAt: Date;
 };
+
+export type updateRoleReturn = {
+    updatedClerkId: string;
+    newRole: 'admin' | 'user';
+} | void;
