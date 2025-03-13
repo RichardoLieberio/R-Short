@@ -10,9 +10,10 @@ type AdminLayoutProps = {
     totalRevenue: ReactNode,
     totalUser: ReactNode,
     revenueChart: ReactNode,
+    userTable: ReactNode,
 };
 
-export default function AdminLayout({ totalRevenue, totalUser, revenueChart }: AdminLayoutProps): JSX.Element {
+export default function AdminLayout({ totalRevenue, totalUser, revenueChart, userTable }: AdminLayoutProps): JSX.Element {
     return (
         <>
             <header className="mt-12 flex items-center gap-4">
@@ -27,8 +28,9 @@ export default function AdminLayout({ totalRevenue, totalUser, revenueChart }: A
                     </Suspense>
                 </div>
             </header>
-            <main className="mt-12 mb-16">
+            <main className="mt-12 mb-16 space-y-12">
                 { revenueChart }
+                { userTable }
             </main>
         </>
     );
