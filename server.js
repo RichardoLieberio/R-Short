@@ -60,6 +60,11 @@ app.patch('/', (req, res) => {
 
 app.delete('/', (req, res) => deleteVideo(req.body.path, req.body.folder));
 
+app.patch('/coin', (req, res) => {
+    const { clerkId, coin } = req.body;
+    io.to(clerkId).emit('coin:update', { coin });
+});
+
 server.listen(process.env.PORT, () => {
     console.log(`Server running on port ${process.env.PORT}`);
 });
