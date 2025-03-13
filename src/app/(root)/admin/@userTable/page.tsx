@@ -2,10 +2,9 @@
 
 import { JSX } from 'react';
 
-import { flexRender } from '@tanstack/react-table';
-import { Table, TableHeader, TableHead, TableRow, TableBody, TableCell } from '@components/shadcn/table';
 import { Input } from '@components/shadcn/input';
 import { MdRefresh } from 'react-icons/md';
+import UserDataTable from './_components/UserDataTable';
 import AdjustCoinDialog from './_components/AdjustCoinDialog';
 
 import { useUserTable } from './hooks';
@@ -23,44 +22,7 @@ export default function UserTable(): JSX.Element {
                 </div>
             </header>
             <main className="mt-4">
-                <Table>
-                    <TableHeader>
-                        {
-                            table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id}>
-                                    {
-                                        headerGroup.headers.map((header) => (
-                                            <TableHead key={header.id}>
-                                                { header.isPlaceholder ? null : flexRender( header.column.columnDef.header, header.getContext() )}
-                                            </TableHead>
-                                        ))
-                                    }
-                                </TableRow>
-                            ))
-                        }
-                    </TableHeader>
-                    <TableBody>
-                        {
-                            table.getRowModel().rows?.length
-                                ? table.getRowModel().rows.map((row) => (
-                                    <TableRow key={row.id}>
-                                        {
-                                            row.getVisibleCells().map((cell) => (
-                                                <TableCell key={cell.id}>
-                                                    { flexRender(cell.column.columnDef.cell, cell.getContext()) }
-                                                </TableCell>
-                                            ))
-                                        }
-                                    </TableRow>
-                                ))
-                                : <TableRow>
-                                    <TableCell colSpan={columnsLength} className="h-24 text-center">
-                                        No results.
-                                    </TableCell>
-                                </TableRow>
-                        }
-                    </TableBody>
-                </Table>
+                <UserDataTable table={table} columnsLength={columnsLength} />
             </main>
             <AdjustCoinDialog setUsers={setUsers} adjustCoin={adjustCoin} setAdjustCoin={setAdjustCoin} />
         </div>
