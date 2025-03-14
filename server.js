@@ -35,11 +35,44 @@ io.on('connection', (socket) => {
     });
 });
 
-app.post('/', async (req, res) => {
+app.post('/', (req, res) => {
     console.log('Post request accepted');
+    startGenerate(req.body || {});
+    res.status(200).json({ message: 'Post request accepted' });
+});
 
+app.patch('/', (req, res) => {
+    console.log('Patch request accepted');
+
+    const { userId, videoId } = req.body || {};
+    if (userId && videoId) {
+        queue.push({ userId, videoId });
+        addQueue();
+    }
+
+    res.status(200).json({ message: 'Patch request accepted' });
+});
+
+app.delete('/', (req, res) => {
+    console.log('Delete request accepted');
+    deleteVideo(req.body?.path, req.body?.folder)
+    res.status(200).json({ message: 'Delete request accepted' });
+});
+
+app.patch('/coin', (req, res) => {
+    console.log('Patch /coin request accepted');
+    const { clerkId, coin } = req.body || {};
+    if (clerkId && !isNaN(Number(coin))) io.to(clerkId).emit('coin:update', { coin });
+    res.status(200).json({ message: 'Patch /coin request accepted' });
+});
+
+server.listen(process.env.PORT, () => {
+    console.log(`Server running on port ${process.env.PORT}`);
+});
+
+async function startGenerate(body) {
     try {
-        const { userId, insertedId, style, duration, storyboard } = req.body || {};
+        const { userId, insertedId, style, duration, storyboard } = body;
         if (!userId || !insertedId || !style || !duration || !storyboard) throw new Error('Incorrect body');
 
         io.to(userId).emit('generate:pending', { videoId: insertedId });
@@ -57,32 +90,7 @@ app.post('/', async (req, res) => {
     } catch (error) {
         console.error(error);
     }
-});
-
-app.patch('/', (req, res) => {
-    console.log('Patch request accepted');
-
-    const { userId, videoId } = req.body || {};
-    if (userId && videoId) {
-        queue.push({ userId, videoId });
-        addQueue();
-    }
-});
-
-app.delete('/', (req, res) => {
-    console.log('Delete request accepted');
-    deleteVideo(req.body?.path, req.body?.folder)
-});
-
-app.patch('/coin', (req, res) => {
-    console.log('Patch /coin request accepted');
-    const { clerkId, coin } = req.body || {};
-    if (clerkId && !isNaN(Number(coin))) io.to(clerkId).emit('coin:update', { coin });
-});
-
-server.listen(process.env.PORT, () => {
-    console.log(`Server running on port ${process.env.PORT}`);
-});
+}
 
 async function addQueue() {
     if (isRendering) return;
