@@ -1,5 +1,5 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
-import { AppDispatch, useAppDispatch } from '@store';
+import { useAppSelector, AppDispatch, useAppDispatch } from '@store';
 import { setTotalTransactions } from '@store/user';
 import { useRevenueChartReturn, dataType } from './types';
 import { fetchTransaction, fetchTotalTransaction } from './action';
@@ -9,13 +9,14 @@ export function useRevenueChart(): useRevenueChartReturn {
     const [ type, setType ]: [ string, Dispatch<SetStateAction<string>> ] = useState('seven-days');
     const [ isFetching, setIsFetching ]: [ boolean, Dispatch<SetStateAction<boolean>> ] = useState(false);
 
+    const totalTransactions: number | null = useAppSelector((state) => state.user.totalTransactions);
+
     const dispatch: AppDispatch = useAppDispatch();
 
     useEffect(() => {
         async function getData(): Promise<void> {
-            if (data === null && !isFetching) {
+            if (totalTransactions === null && !isFetching) {
                 setIsFetching(true);
-                dispatch(setTotalTransactions(null));
 
                 const data: dataType[] = await fetchTransaction(type);
                 const total: number = await fetchTotalTransaction();
@@ -23,11 +24,18 @@ export function useRevenueChart(): useRevenueChartReturn {
                 dispatch(setTotalTransactions(total));
 
                 setIsFetching(false);
+            } else if (data === null && !isFetching) {
+                setIsFetching(true);
+
+                const data: dataType[] = await fetchTransaction(type);
+                setData(data);
+
+                setIsFetching(false);
             }
         }
 
         getData();
-    }, [ data, type, isFetching, dispatch ]);
+    }, [ data, type, isFetching, totalTransactions, dispatch ]);
 
     useEffect(() => {
         setData(null);
@@ -93,5 +101,12 @@ export function useRevenueChart(): useRevenueChartReturn {
         }
     }
 
-    return { data, setData, type, setType, getDescription, tickFormatter, labelFormatter };
+    function refreshRevenue(): void {
+        if (!isFetching) {
+            setData(null);
+            dispatch(setTotalTransactions(null));
+        }
+    }
+
+    return { data, type, setType, getDescription, tickFormatter, labelFormatter, refreshRevenue };
 }

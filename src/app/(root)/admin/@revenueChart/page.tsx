@@ -28,7 +28,7 @@ const types: Record<string, string> = {
 };
 
 export default function RevenueChart(): JSX.Element {
-    const { type, setType, data, setData, getDescription, tickFormatter, labelFormatter }: useRevenueChartReturn = useRevenueChart();
+    const { type, setType, data, getDescription, tickFormatter, labelFormatter, refreshRevenue }: useRevenueChartReturn = useRevenueChart();
 
     if (!data) return (
         <Skeleton className="w-full aspect-[736/562] rounded-xl" />
@@ -52,7 +52,7 @@ export default function RevenueChart(): JSX.Element {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <div onClick={() => setData(null)} className="p-1 cursor-pointer">
+                    <div onClick={refreshRevenue} className="p-1 cursor-pointer">
                         <MdRefresh className="text-lg md:text-xl" />
                     </div>
                 </div>
