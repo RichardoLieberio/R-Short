@@ -23,7 +23,7 @@ export default function AdminLayout({ totalRevenue, totalUser, revenueChart, use
                     { totalUser }
                 </div>
             </header>
-            <main className="mt-12 mb-16 space-y-12">
+            <main className="mt-20 mb-16 space-y-20">
                 { revenueChart }
                 { userTable }
             </main>
