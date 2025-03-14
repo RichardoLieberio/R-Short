@@ -16,7 +16,7 @@ export async function updateCoin(clerkId: string, coin: number): Promise<updateC
             .then((result) => result[0] || {});
 
         if (updatedClerkId) {
-            fetch(process.env.NEXT_PUBLIC_SERVICE_URI! + '/coin', {
+            await fetch(process.env.NEXT_PUBLIC_SERVICE_URI! + '/coin', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ clerkId: updatedClerkId, coin: newCoin }),
