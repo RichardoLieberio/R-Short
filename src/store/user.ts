@@ -8,6 +8,7 @@ type initialStateType = {
     openShop: boolean;
     handlingPurchase: boolean;
     processingUser: { [ clerkId: string ]: string };
+    totalTransactions: number | null;
     totalUsers: number | null;
 };
 
@@ -17,6 +18,7 @@ const initialState: initialStateType = {
     openShop: false,
     handlingPurchase: false,
     processingUser: {},
+    totalTransactions: null,
     totalUsers: null,
 };
 
@@ -48,11 +50,14 @@ export const userSlice = createSlice({
         removeUserProcess: (state, action: PayloadAction<string>) => {
             delete state.processingUser[action.payload];
         },
+        setTotalTransactions: (state, action: PayloadAction<number | null>) => {
+            state.totalTransactions = action.payload;
+        },
         setTotalUsers: (state, action: PayloadAction<number | null>) => {
             state.totalUsers = action.payload;
         },
     },
 });
 
-export const { setCoin, reduceCoin, addProcess, removeProcess, setOpenShop, setHandlingPurchase, addUserProcess, removeUserProcess, setTotalUsers } = userSlice.actions;
+export const { setCoin, reduceCoin, addProcess, removeProcess, setOpenShop, setHandlingPurchase, addUserProcess, removeUserProcess, setTotalTransactions, setTotalUsers } = userSlice.actions;
 export default userSlice.reducer;

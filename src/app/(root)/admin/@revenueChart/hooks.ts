@@ -1,26 +1,33 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
+import { AppDispatch, useAppDispatch } from '@store';
+import { setTotalTransactions } from '@store/user';
 import { useRevenueChartReturn, dataType } from './types';
-import { fetchTransaction } from './action';
+import { fetchTransaction, fetchTotalTransaction } from './action';
 
 export function useRevenueChart(): useRevenueChartReturn {
     const [ data, setData ]: [ null | dataType[], Dispatch<SetStateAction<null | dataType[]>> ] = useState<null | dataType[]>(null);
     const [ type, setType ]: [ string, Dispatch<SetStateAction<string>> ] = useState('seven-days');
     const [ isFetching, setIsFetching ]: [ boolean, Dispatch<SetStateAction<boolean>> ] = useState(false);
 
+    const dispatch: AppDispatch = useAppDispatch();
+
     useEffect(() => {
         async function getData(): Promise<void> {
             if (data === null && !isFetching) {
                 setIsFetching(true);
+                dispatch(setTotalTransactions(null));
 
-                const data: dataType[] | void = await fetchTransaction(type);
+                const data: dataType[] = await fetchTransaction(type);
+                const total: number = await fetchTotalTransaction();
                 setData(data);
+                dispatch(setTotalTransactions(total));
 
                 setIsFetching(false);
             }
         }
 
         getData();
-    }, [ data, type, isFetching ]);
+    }, [ data, type, isFetching, dispatch ]);
 
     useEffect(() => {
         setData(null);

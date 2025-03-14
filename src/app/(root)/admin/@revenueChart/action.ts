@@ -128,3 +128,11 @@ export async function fetchTransaction(type: string): Promise<dataType[]> {
 
     }
 }
+
+export async function fetchTotalTransaction(): Promise<number> {
+    const { total }: { total: number } = await db.select({ total: sql<number>`SUM(amount)` })
+        .from(Transaction)
+        .then((result) => result[0]);
+
+    return total;
+}

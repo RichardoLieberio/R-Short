@@ -1,5 +1,4 @@
-import { ReactNode, JSX, Suspense } from 'react';
-import Skeleton from '@components/Skeleton';
+import { ReactNode, JSX } from 'react';
 
 export const metadata: object = {
     title: 'R Short - Admin Dashboard',
@@ -18,14 +17,10 @@ export default function AdminLayout({ totalRevenue, totalUser, revenueChart, use
         <>
             <header className="mt-12 flex items-center gap-4">
                 <div className="flex-1 max-w-52">
-                    <Suspense fallback={<Skeleton className="h-[98px] md:h-[102px] rounded-xl" />}>
-                        { totalRevenue }
-                    </Suspense>
+                    { totalRevenue }
                 </div>
                 <div className="flex-1 max-w-52">
-                    <Suspense fallback={<Skeleton className="h-[98px] md:h-[102px] rounded-xl" />}>
-                        { totalUser }
-                    </Suspense>
+                    { totalUser }
                 </div>
             </header>
             <main className="mt-12 mb-16 space-y-12">
