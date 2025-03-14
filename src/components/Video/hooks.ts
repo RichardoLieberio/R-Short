@@ -1,7 +1,8 @@
 import { Dispatch, SetStateAction, useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
 
-import { useAppSelector } from '@store';
+import { useAppSelector, AppDispatch, useAppDispatch } from '@store';
+import { incrementCoin } from '@store/user';
 
 import { useSocket } from '@components/SocketProvider';
 
@@ -11,6 +12,8 @@ import { VideoType, useVideoReturn } from './types';
 export function useVideo(id: number): useVideoReturn {
     const [ video, setVideo ]: [ VideoType | undefined | null, Dispatch<SetStateAction<VideoType | undefined | null>> ] = useState<VideoType | undefined | null>(undefined);
     const { socket }: { socket: Socket | null } = useSocket();
+
+    const dispatch: AppDispatch = useAppDispatch();
 
     const processing: { [ id: number ]: string } = useAppSelector((state) => state.user.processing);
 
@@ -37,10 +40,11 @@ export function useVideo(id: number): useVideoReturn {
             });
 
             socket.on('generate:failed', ({ videoId }: { videoId: number }) => {
+                dispatch(incrementCoin());
                 if (video && video.id === videoId) setVideo({ ...video, status: 'failed' });
             });
         }
-    }, [ id, video, socket ]);
+    }, [ id, video, socket, dispatch ]);
 
     useEffect(() => {
         async function fetchVideo(): Promise<void> {
