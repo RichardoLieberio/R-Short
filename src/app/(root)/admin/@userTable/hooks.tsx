@@ -104,7 +104,7 @@ export function useUserTable(): useUserTableReturn {
             header: ({ column }: { column: Column<userType, unknown> }): JSX.Element => (
                 <div onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')} className="flex items-center gap-1 whitespace-nowrap">
                     Created at
-                    { column.getIsSorted() === 'asc' ? <FaCaretDown /> : <FaCaretDown /> }
+                    { column.getIsSorted() === 'asc' ? <FaCaretUp /> : <FaCaretDown /> }
                 </div>
             ),
             cell: ({ row }: { row: Row<userType> }) => (
