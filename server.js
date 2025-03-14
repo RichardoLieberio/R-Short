@@ -36,33 +36,48 @@ io.on('connection', (socket) => {
 });
 
 app.post('/', async (req, res) => {
-    const { userId, insertedId, style, duration, storyboard } = req.body;
+    console.log('Post request accepted');
 
-    io.to(userId).emit('generate:pending', { videoId: insertedId });
+    try {
+        const { userId, insertedId, style, duration, storyboard } = req.body || {};
+        if (!userId || !insertedId || !style || !duration || !storyboard) throw new Error('Incorrect body');
 
-    const result = await generate({ userId, insertedId, style, duration, storyboard });
+        io.to(userId).emit('generate:pending', { videoId: insertedId });
 
-    if (result) {
-        io.to(userId).emit('generate:success', { videoId: insertedId, ...result });
+        const result = await generate({ userId, insertedId, style, duration, storyboard });
 
-        queue.push({ userId, videoId: insertedId });
-        addQueue();
-    } else {
-        io.to(userId).emit('generate:failed', { videoId: insertedId });
+        if (result) {
+            io.to(userId).emit('generate:success', { videoId: insertedId, ...result });
+
+            queue.push({ userId, videoId: insertedId });
+            addQueue();
+        } else {
+            io.to(userId).emit('generate:failed', { videoId: insertedId });
+        }
+    } catch (error) {
+        console.error(error);
     }
 });
 
 app.patch('/', (req, res) => {
-    const { userId, videoId } = req.body;
-    queue.push({ userId, videoId });
-    addQueue();
+    console.log('Patch request accepted');
+
+    const { userId, videoId } = req.body || {};
+    if (userId && videoId) {
+        queue.push({ userId, videoId });
+        addQueue();
+    }
 });
 
-app.delete('/', (req, res) => deleteVideo(req.body.path, req.body.folder));
+app.delete('/', (req, res) => {
+    console.log('Delete request accepted');
+    deleteVideo(req.body?.path, req.body?.folder)
+});
 
 app.patch('/coin', (req, res) => {
-    const { clerkId, coin } = req.body;
-    io.to(clerkId).emit('coin:update', { coin });
+    console.log('Patch /coin request accepted');
+    const { clerkId, coin } = req.body || {};
+    if (clerkId && !isNaN(Number(coin))) io.to(clerkId).emit('coin:update', { coin });
 });
 
 server.listen(process.env.PORT, () => {
@@ -80,8 +95,6 @@ async function addQueue() {
     if (path) {
         io.to(userId).emit('generate:rendered', { videoId, path });
         console.log(`Video rendered. Video Id: ${videoId}`);
-    } else {
-        console.log(`Video is rendered. Video Id: ${videoId}`);
     }
 
     isRendering = false;
