@@ -2,7 +2,7 @@ import { useState, useEffect, Dispatch, SetStateAction, JSX } from 'react';
 
 import { useAuth } from '@clerk/clerk-react';
 import { useAppSelector, useAppDispatch, AppDispatch } from '@store';
-import { addUserProcess, removeUserProcess } from '@store/user';
+import { addUserProcess, removeUserProcess, setTotalUsers } from '@store/user';
 
 import { Table, Column, ColumnDef, ColumnFiltersState, Row, SortingState, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@components/shadcn/dropdown-menu';
@@ -28,13 +28,15 @@ export function useUserTable(): useUserTableReturn {
     useEffect(() => {
         async function getUsers(): Promise<void> {
             if (!users.length) {
+                dispatch(setTotalUsers(null));
                 const users: userType[] = await fetchUsers();
                 setUsers(users);
+                dispatch(setTotalUsers(users.length));
             }
         }
 
         getUsers();
-    }, [ users ]);
+    }, [ users, dispatch ]);
 
     const columns: ColumnDef<userType>[] = [
         {

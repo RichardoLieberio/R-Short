@@ -1,13 +1,17 @@
+'use client';
+
 import { JSX } from 'react';
-import { sql } from 'drizzle-orm';
-import { db, User } from '@database';
+import { useAppSelector } from '@store';
 import { Card, CardHeader, CardTitle, CardDescription } from '@components/shadcn/card';
+import Skeleton from '@components/Skeleton';
 import { FaUser } from 'react-icons/fa6';
 
-export default async function TotalUser(): Promise<JSX.Element> {
-    const { total }: { total: number } = await db.select({ total: sql<number>`COUNT(*)` })
-        .from(User)
-        .then((result) => result[0]);
+export default function TotalUser(): JSX.Element {
+    const totalUsers: number | null = useAppSelector((state) => state.user.totalUsers);
+
+    if (totalUsers === null) return (
+        <Skeleton className="h-[98px] md:h-[102px] rounded-xl" />
+    );
 
     return (
         <Card className="bg-secondary">
@@ -15,7 +19,7 @@ export default async function TotalUser(): Promise<JSX.Element> {
                 <CardTitle className="text-xs md:text-sm font-normal">Total user</CardTitle>
                 <CardDescription className="text-lg md:text-xl text-foreground flex items-center gap-2">
                     <FaUser className="text-base md:text-lg" />
-                    <span>{ total }</span>
+                    <span>{ totalUsers }</span>
                 </CardDescription>
             </CardHeader>
         </Card>
