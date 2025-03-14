@@ -27,6 +27,6 @@ export const faqs: faqsType[] = [
     },
     {
         question: 'What payment methods are accepted?',
-        answer: 'We accept credit/debit cards and local Indonesian bank payment options.',
+        answer: 'We accept local Indonesian bank payments.',
     },
 ];
