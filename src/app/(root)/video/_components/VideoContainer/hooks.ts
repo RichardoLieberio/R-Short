@@ -1,9 +1,6 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { Socket } from 'socket.io-client';
 
-import { AppDispatch, useAppDispatch } from '@store';
-import { incrementCoin } from '@store/user';
-
 import { useSocket } from '@components/SocketProvider';
 
 import { useVideoContainerReturn } from './types';
@@ -12,8 +9,6 @@ import { videoPreviewType } from '../../types';
 export function useVideoContainer(videos: videoPreviewType[]): useVideoContainerReturn {
     const [ renderVideos, setRenderVideos ]: [ videoPreviewType[], Dispatch<SetStateAction<videoPreviewType[]>> ] = useState(videos);
     const { socket }: { socket: Socket | null } = useSocket();
-
-    const dispatch: AppDispatch = useAppDispatch();
 
     useEffect(() => {
         setRenderVideos(videos);
@@ -52,7 +47,6 @@ export function useVideoContainer(videos: videoPreviewType[]): useVideoContainer
             });
 
             socket.on('generate:failed', ({ videoId }: { videoId: number }) => {
-                dispatch(incrementCoin());
                 if (renderVideos.find((video) => video.id === videoId)) {
                     const newVideos: videoPreviewType[] = renderVideos.map((video) => {
                         if (video.id === videoId) return { ...video, status: 'failed' };
@@ -62,7 +56,7 @@ export function useVideoContainer(videos: videoPreviewType[]): useVideoContainer
                 }
             });
         }
-    }, [ renderVideos, socket, dispatch ]);
+    }, [ renderVideos, socket ]);
 
     return { renderVideos };
 }

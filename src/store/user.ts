@@ -29,9 +29,6 @@ export const userSlice = createSlice({
         setCoin: (state, action: PayloadAction<number>) => {
             state.coin = action.payload;
         },
-        incrementCoin: (state) => {
-            state.coin! += 1;
-        },
         reduceCoin: (state) => {
             if (state.coin !== null) state.coin -= 1;
         },
@@ -62,5 +59,5 @@ export const userSlice = createSlice({
     },
 });
 
-export const { setCoin, incrementCoin, reduceCoin, addProcess, removeProcess, setOpenShop, setHandlingPurchase, addUserProcess, removeUserProcess, setTotalTransactions, setTotalUsers } = userSlice.actions;
+export const { setCoin, reduceCoin, addProcess, removeProcess, setOpenShop, setHandlingPurchase, addUserProcess, removeUserProcess, setTotalTransactions, setTotalUsers } = userSlice.actions;
 export default userSlice.reducer;

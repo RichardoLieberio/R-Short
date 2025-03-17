@@ -16,6 +16,11 @@ export function useCoin(): number | null {
             socket.on('coin:update', ({ coin }: { coin: number }) => {
                 dispatch(setCoin(coin));
             });
+
+            socket.on('generate:failed', async () => {
+                const coin: number = await getUserCoin();
+                dispatch(setCoin(coin));
+            });
         }
     }, [ socket, dispatch ]);
 
