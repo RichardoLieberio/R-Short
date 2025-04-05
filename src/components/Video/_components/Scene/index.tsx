@@ -14,7 +14,7 @@ export default function Scene({ fontSize, scale, imageUri, audioUri, captions }:
     return (
         <AbsoluteFill>
             <Img src={imageUri} pauseWhenLoading style={{ objectFit: 'cover', width: '100%', height: '100%', transform: `scale(${scale})`, backgroundColor: 'black' }} />
-            <Audio src={audioUri} />
+            <Audio src={audioUri} pauseWhenBuffering />
             {
                 captions.map((caption, idx) => {
                     const startTime: number = Math.floor(((caption.start + 70) / 1000) * 30);
