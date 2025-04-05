@@ -87,6 +87,7 @@ export default function VideoPlayer({ videoNotFound, video, small }: VideoPlayer
             fps={30}
             controls
             inputProps={{ video, height: Math.round(height) }}
+            numberOfSharedAudioTags={ 0 }
             acknowledgeRemotionLicense
         />
     );
